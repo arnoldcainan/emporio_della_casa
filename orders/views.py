@@ -4,6 +4,7 @@ from .forms import OrderCreateForm
 from products.cart import Cart
 from .services import calculate_shipping
 from django.http import JsonResponse
+from .gateway_service import AsaasGateway
 
 
 
@@ -32,10 +33,21 @@ def order_create(request):
                     quantity=item['quantity']
                 )
 
+            # 3. INTEGRAÇÃO ASAAS: Gera a cobrança
+            gateway = AsaasGateway()
+            payment_response = gateway.create_payment(order)
+            print(f"DEBUG ASAAS: {payment_response}")
+
+            # Pegamos o link de pagamento ou dados do Pix da resposta
+            payment_url = payment_response.get('invoiceUrl')
+
             # Limpar o carrinho após o sucesso
             request.session['cart'] = {}
 
-            return render(request, 'orders/created.html', {'order': order})
+            return render(request, 'orders/created.html', {
+                'order': order,
+                'payment_url': payment_url  # Passamos o link para o template
+            })
     else:
         form = OrderCreateForm()
 

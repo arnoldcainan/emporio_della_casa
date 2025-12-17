@@ -3,27 +3,28 @@
 {% block content %}
 <div class="container py-5 text-center">
     <div class="card shadow-sm p-5 border-0 bg-white">
-        <div class="mb-4">
-            <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
-        </div>
-        <h1 class="fw-bold text-dark">Pedido Recebido com Sucesso!</h1>
-        <p class="lead text-muted">Agradecemos a preferência. Sua seleção de vinhos está sendo preparada.</p>
+        <h1 class="fw-bold text-success">Pedido #{{ order.id }} Reservado!</h1>
+        <p class="lead text-muted">Para garantir seus vinhos, finalize o pagamento abaixo:</p>
 
-        <div class="alert alert-light border d-inline-block px-5 py-3">
-            <p>Número do Pedido: <strong>#{{ order.id }}</strong></p>
-            <p>Valor do Frete: <span class="text-primary">R$ {{ order.shipping_cost }}</span></p>
-            <p class="h5">Total Pago: <strong>R$ {{ order.get_total_cost }}</strong></p>
+        <div class="my-4 p-4 bg-light rounded border">
+            <h5 class="fw-bold mb-3">Total com Frete: R$ {{ order.get_total_cost }}</h5>
+
+            {% if payment_url %}
+                <div class="alert alert-info">
+                    <h5>Quase lá!</h5>
+                    <p>Clique no botão abaixo para abrir o seu PIX com o valor de <strong>R$ {{ order.get_total_cost }}</strong></p>
+                    <a href="{{ payment_url }}" target="_blank" class="btn btn-success btn-lg px-5 fw-bold shadow">
+                        PAGAR AGORA COM PIX
+                    </a>
+                </div>
+            {% else %}
+                <div class="alert alert-warning">
+                        Estamos processando seu link de pagamento. Se não aparecer em 10 segundos, atualize a página.
+                    </div>
+                {% endif %}
         </div>
-        
-        <div class="mt-4">
-            <p class="mb-4 text-secondary">
-                Enviamos os detalhes da confirmação e o código de rastreio para:<br>
-                <strong class="text-dark">{{ order.email }}</strong>
-            </p>
-            <a href="{% url 'products:home' %}" class="btn btn-outline-primary btn-lg px-5 fw-bold">
-                Voltar para a Loja
-            </a>
-        </div>
+
+        <a href="{% url 'products:home' %}" class="btn btn-outline-secondary mt-3">Voltar para a Loja</a>
     </div>
 </div>
 {% endblock %}

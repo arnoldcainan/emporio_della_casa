@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <h1 class="mb-5 text-center fw-bold text-dark">🍷 Nossa Seleção de Vinhos</h1>
+
+    {% for product in products %}
+    <div class="col-md-4 col-sm-6 mb-4">
+        <div class="card h-100 shadow-sm border-0 transition-hover">
+            <div class="position-absolute top-0 start-0 m-2">
+                {% if product.is_featured %}
+                    <span class="badge bg-warning text-dark">Destaque</span>
+                {% endif %}
+                {% if product.is_promotion %}
+                    <span class="badge bg-danger text-white">Promoção</span>
+                {% endif %}
+            </div>
+
+            <div style="height: 250px; overflow: hidden; background: #f8f9fa;">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" class="card-img-top w-100 h-100" style="object-fit: contain;" alt="{{ product.name }}">
+                {% else %}
+                    <div class="d-flex align-items-center justify-content-center h-100 text-muted">Sem imagem</div>
+                {% endif %}
+            </div>
+
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title fw-bold">{{ product.name }}</h5>
+                <p class="text-muted small mb-1">
+                    <i class="bi bi-geo-alt"></i> {{ product.country }} | {{ product.grape }}
+                </p>
+                <p class="text-muted mb-3 italic small">{{ product.winery }} - {{ product.vintage|default:"N.V" }}</p>
+
+                <div class="mt-auto">
+                    <h4 class="text-primary fw-bold mb-3">R$ {{ product.price }}</h4>
+                    <button class="btn btn-success w-100 fw-bold add-to-cart" data-id="{{ product.id }}">
+                        <i class="bi bi-cart-plus"></i> Comprar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <p class="text-muted">Nenhum vinho disponível no momento. Volte em breve!</p>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+document.querySelectorAll('.add-to-cart').forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const productId = this.dataset.id;
+        const btn = this;
+
+        // Desabilita o botão temporariamente para evitar cliques duplos
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>...';
+
+        fetch(`/add/${productId}/`)
+            .then(response => response.json())
+            .then(data => {
+                // Atualiza o contador na Navbar (o seletor .badge deve estar no seu base.html)
+                const cartBadge = document.querySelector('.navbar .badge');
+                if (cartBadge) {
+                    cartBadge.innerText = data.cart_count;
+                }
+
+                // Feedback visual de sucesso
+                btn.classList.replace('btn-success', 'btn-outline-success');
+                btn.innerHTML = '✅ Adicionado!';
+
+                setTimeout(() => {
+                    btn.classList.replace('btn-outline-success', 'btn-success');
+                    btn.innerHTML = '<i class="bi bi-cart-plus"></i> Comprar';
+                    btn.disabled = false;
+                }, 2000);
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                btn.disabled = false;
+            });
+    });
+});
+</script>
+
+<style>
+    .transition-hover {
+        transition: transform 0.2s ease-in-out;
+    }
+    .transition-hover:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}

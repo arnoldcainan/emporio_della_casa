@@ -19,7 +19,12 @@
                         </div>
                         {% endfor %}
                     </div>
-                    <button type="submit" class="btn btn-primary btn-lg mt-4 w-100 fw-bold shadow">
+
+                    <div class="alert alert-warning mt-3 small">
+                        <i class="bi bi-info-circle"></i> O frete será atualizado assim que você digitar a cidade e clicar fora do campo.
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg mt-2 w-100 fw-bold shadow">
                         Confirmar e Finalizar Pedido
                     </button>
                 </form>
@@ -28,22 +33,36 @@
 
         <div class="col-md-5">
             <div class="card p-4 bg-light border-0 shadow-sm">
-                <h4 class="fw-bold mb-3 text-dark">Resumo da Compra</h4>
-                <div class="mb-3">
+                <h4 class="fw-bold mb-4 text-dark">Resumo da Compra</h4>
+
+                <div class="mb-3 border-bottom pb-3">
                     {% for item in cart %}
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span>{{ item.quantity }}x {{ item.product.name }}</span>
-                        <span class="fw-bold text-muted">R$ {{ item.total_price }}</span>
+                        <span class="text-muted">{{ item.quantity }}x {{ item.product.name }}</span>
+                        <span class="fw-bold">R$ {{ item.total_price }}</span>
                     </div>
                     {% endfor %}
                 </div>
-                <hr>
-                <div class="d-flex justify-content-between h5 fw-bold text-success">
-                    <span>Total</span>
-                    <span>R$ {{ cart.get_total_price }}</span>
+
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Subtotal</span>
+                    <span class="fw-bold">R$ <span id="subtotal-val" data-value="{{ cart.get_total_price|stringformat:'.2f' }}">{{ cart.get_total_price }}</span></span>
                 </div>
-                <p class="text-muted small mt-3">
-                    <i class="bi bi-shield-check"></i> Pagamento seguro processado pelo Empório Della Casa.
+
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Frete</span>
+                    <span class="text-primary fw-bold" id="shipping-val">Digite a cidade...</span>
+                </div>
+
+                <hr class="my-3">
+
+                <div class="d-flex justify-content-between h4 fw-bold text-success">
+                    <span>Total</span>
+                    <span>R$ <span id="total-val">{{ cart.get_total_price }}</span></span>
+                </div>
+
+                <p class="text-muted small mt-4 text-center">
+                    <i class="bi bi-shield-lock-fill"></i> Checkout Seguro Empório Della Casa
                 </p>
             </div>
         </div>
@@ -51,25 +70,61 @@
 </div>
 
 <style>
-    /* Estilização rápida para os inputs do Django */
-    input {
+    /* Estilização para os inputs automáticos do Django */
+    input, select, textarea {
         display: block;
         width: 100%;
-        padding: 0.375rem 0.75rem;
+        padding: 0.6rem 0.75rem;
         font-size: 1rem;
-        font-weight: 400;
-        line-height: 1.5;
         color: #212529;
         background-color: #fff;
-        background-clip: padding-box;
-        border: 1px solid #ced4da;
-        border-radius: 0.375rem;
-        transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        transition: border-color .15s ease-in-out;
     }
     input:focus {
-        border-color: #86b7fe;
+        border-color: #0d6efd;
         outline: 0;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
     }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const cityInput = document.querySelector('input[name="city"]');
+        const shippingDisplay = document.getElementById('shipping-val');
+        const totalDisplay = document.getElementById('total-val');
+        const subtotalElement = document.getElementById('subtotal-val');
+
+        if (cityInput && subtotalElement) {
+            // Pegamos o valor numérico direto do atributo data-value que o Django enviou
+            const subtotal = parseFloat(subtotalElement.getAttribute('data-value'));
+
+            cityInput.addEventListener('blur', function() {
+                const city = this.value;
+                if (city.length > 2) {
+                    shippingDisplay.innerText = "Calculando...";
+
+                    fetch(`/orders/ajax/get-shipping/?city=${encodeURIComponent(city)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const shippingCost = parseFloat(data.shipping_cost);
+
+                            // Formatação elegante para o Frete
+                            shippingDisplay.innerText = `R$ ${shippingCost.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+
+                            const totalFinal = subtotal + shippingCost;
+
+                            // Formatação elegante para o Total Final
+                            totalDisplay.innerText = totalFinal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                        })
+                        .catch(error => {
+                            console.error('Erro:', error);
+                            shippingDisplay.innerText = "Erro ao calcular";
+                        });
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

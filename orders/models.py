@@ -18,6 +18,7 @@ class Order(models.Model):
     utm_source = models.CharField(max_length=100, blank=True, null=True)
     utm_medium = models.CharField(max_length=100, blank=True, null=True)
     utm_campaign = models.CharField(max_length=100, blank=True, null=True)
+    shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     class Meta:
         ordering = ['-created']
@@ -26,7 +27,8 @@ class Order(models.Model):
         return f'Pedido {self.id}'
 
     def get_total_cost(self):
-        return sum(item.get_cost() for item in self.items.all())
+        subtotal = sum(item.get_cost() for item in self.items.all())
+        return subtotal + self.shipping_cost
 
 
 class OrderItem(models.Model):

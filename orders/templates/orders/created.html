@@ -8,9 +8,11 @@
         </div>
         <h1 class="fw-bold text-dark">Pedido Recebido com Sucesso!</h1>
         <p class="lead text-muted">Agradecemos a preferência. Sua seleção de vinhos está sendo preparada.</p>
-        
-        <div class="my-4 py-3 px-5 bg-light d-inline-block rounded-pill border">
-            <h5 class="mb-0 fw-bold">Número do Pedido: <span class="text-primary">#{{ order.id }}</span></h5>
+
+        <div class="alert alert-light border d-inline-block px-5 py-3">
+            <p>Número do Pedido: <strong>#{{ order.id }}</strong></p>
+            <p>Valor do Frete: <span class="text-primary">R$ {{ order.shipping_cost }}</span></p>
+            <p class="h5">Total Pago: <strong>R$ {{ order.get_total_cost }}</strong></p>
         </div>
         
         <div class="mt-4">

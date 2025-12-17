@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="card shadow-sm p-5 border-0 bg-white">
+        <div class="mb-4">
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+        </div>
+        <h1 class="fw-bold text-dark">Pedido Recebido com Sucesso!</h1>
+        <p class="lead text-muted">Agradecemos a preferência. Sua seleção de vinhos está sendo preparada.</p>
+        
+        <div class="my-4 py-3 px-5 bg-light d-inline-block rounded-pill border">
+            <h5 class="mb-0 fw-bold">Número do Pedido: <span class="text-primary">#{{ order.id }}</span></h5>
+        </div>
+        
+        <div class="mt-4">
+            <p class="mb-4 text-secondary">
+                Enviamos os detalhes da confirmação e o código de rastreio para:<br>
+                <strong class="text-dark">{{ order.email }}</strong>
+            </p>
+            <a href="{% url 'products:home' %}" class="btn btn-outline-primary btn-lg px-5 fw-bold">
+                Voltar para a Loja
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

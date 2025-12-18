@@ -130,19 +130,19 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
-# Verifica se estamos no ambiente do Railway (pela presença de uma variável de ambiente)
+# 1. Identifica se está no Railway
 IS_RAILWAY = os.environ.get('RAILWAY_ENVIRONMENT_NAME')
 
+# 2. Configura a URL (igual para ambos)
+MEDIA_URL = '/media/'
+
+# 3. Define o ROOT apenas UMA vez
 if IS_RAILWAY:
-    # Em produção (Railway), usamos o caminho absoluto do volume montado
+    # O Railway monta o volume em /app/media se você configurou o Mount Path como /app/media
     MEDIA_ROOT = '/app/media'
 else:
-    # Em desenvolvimento local
+    # Localmente no Windows/Pycharm
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Configuração para upload de imagens
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 JAZZMIN_SETTINGS = {
     "site_title": "Empório Della Casa",

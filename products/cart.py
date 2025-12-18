@@ -49,3 +49,8 @@ class Cart:
             item['price'] = Decimal(item['price'])
             item['total_price'] = item['price'] * item['quantity']
             yield item
+
+    def clear(self):
+        """Remove o carrinho da sessão"""
+        del self.session[settings.CART_SESSION_ID]
+        self.save()

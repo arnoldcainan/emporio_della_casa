@@ -11,7 +11,7 @@ class AsaasGateway:
             'Content-Type': 'application/json'
         }
 
-    def create_payment(self, order):
+    def create_payment(self, order, billing_type='UNDEFINED'):
         """
         Gera uma cobrança via PIX no Asaas para o pedido enviado.
         """
@@ -19,8 +19,8 @@ class AsaasGateway:
 
         # O Asaas espera a chave 'value', não 'amount'
         payload = {
-            "billingType": "PIX",
-            "value": float(order.get_total_cost()),  # CORREÇÃO AQUI
+            "billingType": billing_type,
+            "value": float(order.get_total_cost()),
             "description": f"Pedido #{order.id} - Empório Della Casa",
             "customer": self.get_or_create_customer(order),
             "dueDate": due_date,
@@ -61,3 +61,20 @@ class AsaasGateway:
         # Log de erro caso a criação falhe (ajuda muito na depuração)
         print(f"ERRO AO CRIAR CLIENTE: {data}")
         return None
+
+
+    def get_pix_qr_code(self, payment_id):
+        """Busca o QR Code e a chave copia e cola de uma cobrança Pix"""
+        url = f"{self.api_url}/payments/{payment_id}/pixQrCode"
+        response = requests.get(url, headers=self.headers)
+
+        try:
+            response = requests.get(url, headers=self.headers)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                print(f"ERRO ASAAS QRCODE: {response.text}")
+                return None
+        except Exception as e:
+            print(f"EXCEÇÃO AO BUSCAR QRCODE: {e}")
+            return None

@@ -8,6 +8,7 @@
             <div class="card p-4 shadow-sm border-0">
                 <form action="." method="post" novalidate>
                     {% csrf_token %}
+
                     <div class="row g-3">
                         {% for field in form %}
                         <div class="col-md-6 mb-3">
@@ -18,6 +19,23 @@
                             {% endif %}
                         </div>
                         {% endfor %}
+                    </div>
+
+                    <hr class="my-4">
+                    <h4 class="fw-bold mb-3">💳 Forma de Pagamento</h4>
+                    <div class="bg-light p-3 rounded mb-3">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="payment_method" id="pay_pix" value="PIX" checked>
+                            <label class="form-check-label fw-bold" for="pay_pix">
+                                <i class="bi bi-qr-code"></i> PIX (Aprovação imediata e QR Code na tela)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="pay_card" value="CREDIT_CARD">
+                            <label class="form-check-label fw-bold" for="pay_card">
+                                <i class="bi bi-credit-card"></i> Cartão de Crédito (Parcelado em até 12x)
+                            </label>
+                        </div>
                     </div>
 
                     <div class="alert alert-warning mt-3 small">
@@ -70,8 +88,7 @@
 </div>
 
 <style>
-    /* Estilização para os inputs automáticos do Django */
-    input, select, textarea {
+    input[type="text"], input[type="email"], input[type="number"], select, textarea {
         display: block;
         width: 100%;
         padding: 0.6rem 0.75rem;
@@ -87,6 +104,11 @@
         outline: 0;
         box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
     }
+    /* Estilo para não quebrar os radios do Bootstrap */
+    .form-check-input {
+        width: 1em;
+        display: inline-block;
+    }
 </style>
 
 <script>
@@ -97,7 +119,6 @@
         const subtotalElement = document.getElementById('subtotal-val');
 
         if (cityInput && subtotalElement) {
-            // Pegamos o valor numérico direto do atributo data-value que o Django enviou
             const subtotal = parseFloat(subtotalElement.getAttribute('data-value'));
 
             cityInput.addEventListener('blur', function() {
@@ -109,13 +130,8 @@
                         .then(response => response.json())
                         .then(data => {
                             const shippingCost = parseFloat(data.shipping_cost);
-
-                            // Formatação elegante para o Frete
                             shippingDisplay.innerText = `R$ ${shippingCost.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-
                             const totalFinal = subtotal + shippingCost;
-
-                            // Formatação elegante para o Total Final
                             totalDisplay.innerText = totalFinal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
                         })
                         .catch(error => {

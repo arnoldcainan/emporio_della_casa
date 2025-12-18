@@ -128,6 +128,17 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+
+# Verifica se estamos no ambiente do Railway (pela presença de uma variável de ambiente)
+IS_RAILWAY = os.environ.get('RAILWAY_ENVIRONMENT_NAME')
+
+if IS_RAILWAY:
+    # Em produção (Railway), usamos o caminho absoluto do volume montado
+    MEDIA_ROOT = '/app/media'
+else:
+    # Em desenvolvimento local
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Configuração para upload de imagens
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

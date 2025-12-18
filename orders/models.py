@@ -54,3 +54,10 @@ class OrderItem(models.Model):
 
     def get_cost(self):
         return self.price * self.quantity
+
+
+class OrderDashboard(Order):
+    class Meta:
+        proxy = True
+        verbose_name = 'Dashboard de Vendas'
+        verbose_name_plural = 'Dashboard de Vendas'

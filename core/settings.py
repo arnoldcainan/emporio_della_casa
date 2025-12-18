@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.ngrok-free.app', '.ngrok-free.dev']
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -125,3 +126,68 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Configuração para upload de imagens
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+JAZZMIN_SETTINGS = {
+    "site_title": "Empório Della Casa",
+    "site_header": "Della Casa Admin",
+    "site_brand": "Empório Della Casa",
+    "site_logo": None,  # Você pode colocar um caminho para o logo 🍷
+    "welcome_sign": "Bem-vindo ao Painel de Controle do Empório",
+    "copyright": "Empório Della Casa",
+    "search_model": ["orders.Order"],
+    "user_avatar": None,
+
+    # Menu lateral
+    "topmenu_links": [
+        {"name": "Início", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "Ver Loja", "url": "/", "new_window": True},
+    ],
+
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "hide_apps": [],
+    "hide_models": [],
+
+    # Ícones para os apps (Font Awesome)
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "orders.Order": "fas fa-wine-glass-alt",
+        "orders.OrderDashboard": "fas fa-chart-line",
+        "coupons.Coupon": "fas fa-ticket-alt",
+        "products.Product": "fas fa-wine-bottle",
+        "products.Category": "fas fa-list",
+    },
+}
+
+JAZZMIN_UI_TUNER = {
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": "navbar-dark",
+    "accent": "accent-navy",
+    "navbar": "navbar-dark",  # Estilo escuro
+    "no_navbar_border": False,
+    "navbar_fixed": True,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-dark-primary",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": False,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "default",  # Vamos customizar as cores via CSS se precisar
+    "dark_mode_theme": None,
+    "button_classes": {
+        "primary": "btn-primary",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success"
+    }
+}

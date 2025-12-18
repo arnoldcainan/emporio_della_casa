@@ -1,0 +1,48 @@
+{% extends "admin/change_list.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-maroon"> <div class="inner">
+                    <h3>R$ {{ total_sales|floatformat:2 }}</h3>
+                    <p>Faturamento (30 dias)</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-hand-holding-usd"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-6">
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <h3>{{ count_orders }}</h3>
+                    <p>Pedidos Realizados</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-12">
+            <div class="small-box bg-olive">
+                <div class="inner">
+                    <h3>R$ {{ avg_ticket|floatformat:2 }}</h3>
+                    <p>Ticket Médio</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-percentage"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-maroon { background-color: #4A0404 !important; color: white !important; }
+</style>
+
+{{ block.super }}
+{% endblock %}

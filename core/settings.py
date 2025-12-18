@@ -16,6 +16,7 @@ load_dotenv(dotenv_path=env_path)
 # Busque as variáveis usando o nome EXATO que está dentro do arquivo .env
 ASAAS_API_URL = os.getenv('ASAAS_BASE_URL') # Verifique se no .env está BASE ou API
 ASAAS_API_KEY = os.getenv('ASAAS_API_KEY')
+ASAAS_WEBHOOK_TOKEN = os.getenv('ASAAS_WEBHOOK_TOKEN')
 
 # Log de diagnóstico para o terminal
 if not ASAAS_API_URL:

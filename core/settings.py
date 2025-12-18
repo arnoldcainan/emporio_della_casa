@@ -208,3 +208,7 @@ JAZZMIN_UI_TUNER = {
         "success": "btn-success"
     }
 }
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://emporiodellacasa-production.up.railway.app',
+]

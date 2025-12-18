@@ -7,7 +7,6 @@
             <div class="card border-0 shadow-lg p-4 rounded-5 glass-card">
                 <form method="post" id="checkout-form" class="row g-3">
                     {% csrf_token %}
-
                     <div class="col-md-6">
                         <label class="form-label small fw-bold text-muted text-uppercase">Nome</label>
                         {{ form.first_name }}
@@ -77,12 +76,21 @@
 
                 <div class="d-flex justify-content-between mt-3">
                     <span class="text-muted small text-uppercase">Subtotal</span>
-                    <span class="fw-bold text-dark">R$ {{ cart.get_total_price }}</span>
+                    <span class="fw-bold text-dark" id="display-subtotal">R$ {{ cart.get_total_price }}</span>
                 </div>
 
                 <div class="d-flex justify-content-between mb-2 mt-2">
                     <span class="text-muted small text-uppercase">Frete</span>
-                    <span id="shipping-value" class="fw-bold text-success">Calculando...</span>
+                    <span id="shipping-value" class="fw-bold text-success">R$ 0,00</span>
+                </div>
+
+                <div class="mt-3 p-3 rounded-4 bg-light border-dashed mb-3">
+                    <label class="small fw-bold text-muted text-uppercase mb-2 d-block">Possui um Cupom?</label>
+                    <div class="input-group">
+                        <input type="text" id="coupon-input" class="form-control form-control-sm border-0 shadow-none" placeholder="Ex: VINHO10" style="background: transparent;">
+                        <button class="btn btn-dark btn-sm px-3" type="button" id="apply-coupon-btn">Aplicar</button>
+                    </div>
+                    <div id="coupon-message" class="small mt-2 fw-bold" style="display:none;"></div>
                 </div>
 
                 <hr class="my-3">
@@ -91,11 +99,17 @@
                     <span>Total</span>
                     <span id="total-value">R$ {{ cart.get_total_price }}</span>
                 </div>
-                <small class="text-muted">Total inclui frete selecionado por região.</small>
+                <small class="text-muted">Total inclui frete e descontos.</small>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .border-dashed { border: 2px dashed #dee2e6; }
+    .glass-card { background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(15px); }
+    .text-burgundy { color: #4A0404; }
+</style>
 
 <script src="https://unpkg.com/imask"></script>
 <script>
@@ -104,77 +118,84 @@ const phoneMask = IMask(document.getElementById('id_phone'), { mask: '(00) 00000
 const cepElement = document.getElementById('id_postal_code');
 const cepMask = IMask(cepElement, { mask: '00000-000' });
 
-// 2. VALORES INICIAIS (Django para JS)
-// Convertemos a string do Django "100,00" para o número 100.00
-const cartTotalInitial = parseFloat("{{ cart.get_total_price }}".replace(',', '.'));
+// 2. VARIÁVEIS DE CÁLCULO (Correção da vírgula para ponto)
+let cartSubtotal = parseFloat("{{ cart.get_total_price }}".replace('.', '').replace(',', '.'));
+let currentShipping = 0;
+let currentDiscountPercent = 0;
+
+function updateUIDisplay() {
+    const discountAmount = cartSubtotal * (currentDiscountPercent / 100);
+    const finalTotal = (cartSubtotal - discountAmount) + currentShipping;
+
+    document.getElementById('total-value').innerText =
+        `R$ ${finalTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+}
 
 // 3. LÓGICA DE CEP E FRETE
 cepElement.addEventListener('blur', function() {
     const cep = this.value.replace(/\D/g, '');
     if (cep.length === 8) {
         document.getElementById('cep-spinner').style.display = 'block';
-        document.getElementById('shipping-value').innerText = "Calculando...";
-
         fetch(`https://viacep.com.br/ws/${cep}/json/`)
             .then(res => res.json())
             .then(data => {
                 if (!data.erro) {
-                    // Preenche campos de endereço
                     document.getElementById('id_address').value = `${data.logradouro}, ${data.bairro}`;
                     document.getElementById('id_city').value = data.localidade;
                     document.getElementById('id_number').focus();
 
-                    // Consulta Frete no Backend
                     fetch(`/orders/get-shipping-quote/?city=${encodeURIComponent(data.localidade)}`)
                         .then(res => res.json())
                         .then(shippingData => {
-                            const shippingCost = parseFloat(shippingData.shipping_cost);
-                            const finalTotal = cartTotalInitial + shippingCost;
-
-                            // Atualiza interface com formatação brasileira
+                            currentShipping = parseFloat(shippingData.shipping_cost);
                             document.getElementById('shipping-value').innerText =
-                                `R$ ${shippingCost.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-
-                            document.getElementById('total-value').innerText =
-                                `R$ ${finalTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-                        })
-                        .catch(() => {
-                            document.getElementById('shipping-cost').innerText = "Erro ao calcular";
+                                `R$ ${currentShipping.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                            updateUIDisplay();
                         });
-                } else {
-                    alert("CEP não encontrado.");
                 }
             })
-            .finally(() => {
-                document.getElementById('cep-spinner').style.display = 'none';
-            });
+            .finally(() => { document.getElementById('cep-spinner').style.display = 'none'; });
     }
 });
 
-// 4. AJAX DA HOME (Suporte para adições extras)
-document.addEventListener('click', function(e) {
-    const btn = e.target.closest('.add-to-cart');
-    if (btn) {
-        e.preventDefault();
-        const productId = btn.dataset.id;
-        btn.disabled = true;
-        const originalContent = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+// 4. LÓGICA DE CUPOM
+document.getElementById('apply-coupon-btn').addEventListener('click', function() {
+    const code = document.getElementById('coupon-input').value;
+    const messageEl = document.getElementById('coupon-message');
+    const btn = this;
 
-        fetch(`/add/${productId}/`)
-            .then(res => res.json())
-            .then(data => {
-                const badge = document.getElementById('cart-badge');
-                if (badge) {
-                    badge.innerText = data.cart_count;
-                    badge.classList.remove('d-none');
-                }
-                btn.classList.replace('btn-burgundy', 'btn-success');
-                btn.innerHTML = '✅ Adicionado';
-                // Recarrega a página para atualizar o resumo se o usuário adicionar itens aqui
-                setTimeout(() => { location.reload(); }, 1000);
-            });
-    }
+    if(!code) return;
+    btn.disabled = true;
+
+    // ATENÇÃO: Verifique se sua URL no urls.py é exatamente '/coupons/apply/'
+    fetch("{% url 'coupons:apply' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: `coupon_code=${encodeURIComponent(code)}`
+    })
+    .then(res => res.json())
+    .then(data => {
+        messageEl.style.display = 'block';
+        if (data.success) {
+            currentDiscountPercent = parseFloat(data.discount);
+            messageEl.className = "small mt-2 text-success";
+            messageEl.innerText = `✅ Cupom de ${data.discount}% aplicado!`;
+            updateUIDisplay();
+        } else {
+            currentDiscountPercent = 0;
+            messageEl.className = "small mt-2 text-danger";
+            messageEl.innerText = `❌ ${data.message}`;
+            updateUIDisplay();
+        }
+    })
+    .catch(err => {
+        messageEl.innerText = "Erro ao processar cupom.";
+        messageEl.style.display = 'block';
+    })
+    .finally(() => { btn.disabled = false; });
 });
 </script>
 {% endblock %}

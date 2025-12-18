@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5 mt-5 fade-in">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="text-center mb-5">
+                <span class="text-uppercase ls-2 small text-muted">A Arte de Selecionar</span>
+                <h1 class="fw-bold text-burgundy display-4 mt-2">Winehunters</h1>
+                <div style="height: 3px; width: 80px; background: var(--gold, #D4AF37); margin: 20px auto;"></div>
+            </div>
+
+            <div class="row align-items-center g-5">
+                <div class="col-md-6">
+                    <h2 class="fw-bold mb-4">Vinhos do Velho e Novo Mundo</h2>
+                    <p class="lead text-muted">
+                        Nossa curadoria viaja pelas principais regiões vinícolas para trazer rótulos surpreendentes, conectando você à essência de cada terroir.
+                    </p>
+                    <p class="text-muted">
+                        Seja a tradição e elegância dos vinhos do <strong>Velho Mundo</strong> (França, Itália, Portugal e Espanha) ou a inovação e o frescor das castas do <strong>Novo Mundo</strong> (Argentina, Chile, Brasil e África do Sul), cada garrafa no Empório Della Casa é escolhida a dedo.
+                    </p>
+                    <div class="mt-4">
+                        <a href="{% url 'products:home' %}" class="btn btn-burgundy px-4 py-2 rounded-pill shadow">Explorar Adega</a>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="rounded-5 overflow-hidden shadow-lg border" style="height: 400px; background: url('https://images.unsplash.com/photo-1510850402484-695624744749?q=80&w=1000') center/cover;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-5 pt-5 text-center g-4">
+                <div class="col-6 col-md-3">
+                    <h5 class="fw-bold mb-0">França</h5>
+                    <small class="text-muted">Bordeaux & Borgonha</small>
+                </div>
+                <div class="col-6 col-md-3">
+                    <h5 class="fw-bold mb-0">Itália</h5>
+                    <small class="text-muted">Toscana & Piemonte</small>
+                </div>
+                <div class="col-6 col-md-3">
+                    <h5 class="fw-bold mb-0">Argentina</h5>
+                    <small class="text-muted">Mendoza & Salta</small>
+                </div>
+                <div class="col-6 col-md-3">
+                    <h5 class="fw-bold mb-0">Chile</h5>
+                    <small class="text-muted">Valle del Maipo</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

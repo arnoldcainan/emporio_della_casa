@@ -42,6 +42,27 @@
 
         .fade-in { animation: fadeIn 0.8s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Estilos para refinamento visual */
+        .ls-2 { letter-spacing: 2px; }
+        .text-burgundy { color: #4A0404; }
+        .btn-burgundy { background-color: #4A0404; color: white; border: none; }
+        .btn-burgundy:hover { background-color: #630606; color: #f8f9fa; }
+
+        /* Efeitos de Hover nos Links */
+        .hvr-burgundy:hover { color: #4A0404 !important; transition: 0.3s; }
+        .hvr-gold:hover { color: #D4AF37 !important; transition: 0.3s; cursor: pointer; }
+
+        /* Filtro de tons de cinza para os cartões (estilo clássico) */
+        .grayscale-filter img {
+            filter: grayscale(100%);
+            opacity: 0.6;
+            transition: 0.3s;
+        }
+        .grayscale-filter img:hover {
+            filter: grayscale(0%);
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -77,48 +98,71 @@
     <div class="container mt-5 fade-in">
         {% block content %}{% endblock %}
     </div>
-    <footer class="mt-5 py-5 border-top bg-white">
+    <footer class="mt-5 py-5 border-top bg-white shadow-sm">
         <div class="container">
-            <div class="row">
+            <div class="row g-4">
                 <div class="col-md-4 mb-4">
                     <h4 class="fw-bold text-burgundy mb-4">🍷 Empório Della Casa</h4>
-                    <p class="text-muted small">A maior curadoria de vinhos premium selecionada por especialistas para momentos únicos.</p>
-                    <div class="d-flex gap-3">
-                        <i class="bi bi-instagram fs-4"></i>
-                        <i class="bi bi-facebook fs-4"></i>
-                        <i class="bi bi-whatsapp fs-4"></i>
+                    <p class="text-muted small lh-lg">A maior curadoria de vinhos premium selecionada por especialistas para momentos únicos e paladares exigentes.</p>
+                    <div class="d-flex gap-3 text-burgundy">
+                        <a href="#" class="text-reset text-decoration-none"><i class="bi bi-instagram fs-4 hvr-gold"></i></a>
+                        <a href="#" class="text-reset text-decoration-none"><i class="bi bi-facebook fs-4 hvr-gold"></i></a>
+                        <a href="https://wa.me/SEUNUMERO" target="_blank" class="text-reset text-decoration-none"><i class="bi bi-whatsapp fs-4 hvr-gold"></i></a>
                     </div>
                 </div>
+
                 <div class="col-md-2 mb-4">
-                    <h6 class="fw-bold mb-3">Categorias</h6>
-                    <ul class="list-unstyled small text-muted">
-                        <li>Tintos</li>
-                        <li>Brancos</li>
-                        <li>Espumantes</li>
-                        <li>Acessórios</li>
+                    <h6 class="fw-bold mb-3 text-uppercase small ls-2">Adega</h6>
+                    <ul class="list-unstyled small text-muted lh-lg">
+                        <li><a href="{% url 'products:home' %}?category=tintos" class="text-reset text-decoration-none hvr-burgundy">Tintos</a></li>
+                        <li><a href="{% url 'products:home' %}?category=brancos" class="text-reset text-decoration-none hvr-burgundy">Brancos</a></li>
+                        <li><a href="{% url 'products:home' %}?category=espumantes" class="text-reset text-decoration-none hvr-burgundy">Espumantes</a></li>
+                        <li><a href="{% url 'orders:track_orders' %}" class="text-reset text-decoration-none hvr-burgundy fw-bold mt-2 d-block">Meus Pedidos</a></li>
                     </ul>
                 </div>
+
                 <div class="col-md-2 mb-4">
-                    <h6 class="fw-bold mb-3">Ajuda</h6>
-                    <ul class="list-unstyled small text-muted">
-                        <li>Fale Conosco</li>
-                        <li>Trocas e Devoluções</li>
-                        <li>Prazos de Entrega</li>
+                    <h6 class="fw-bold mb-3 text-uppercase small ls-2">Suporte</h6>
+                    <ul class="list-unstyled small text-muted lh-lg">
+                        <li><a href="{% url 'fale_conosco' %}" class="text-reset text-decoration-none hvr-burgundy">Fale Conosco</a></li>
+                        <li><a href="{% url 'trocas' %}" class="text-reset text-decoration-none hvr-burgundy">Políticas de Troca</a></li>
+                        <li><a href="{% url 'envios' %}" class="text-reset text-decoration-none hvr-burgundy">Envios e Prazos</a></li>
                     </ul>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <h6 class="fw-bold mb-3">Receba Ofertas Exclusivas</h6>
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control border-0 bg-light" placeholder="Seu melhor e-mail">
-                        <button class="btn btn-burgundy">Assinar</button>
+
+                <div class="col-md-4 mb-4 text-md-end text-center">
+                    <h6 class="fw-bold mb-3">Newsletter Exclusiva</h6>
+                    <div class="input-group mb-3 shadow-sm rounded-pill overflow-hidden">
+                        <input type="email" class="form-control border-0 bg-light px-3" placeholder="seu@email.com">
+                        <button class="btn btn-burgundy px-4">Assinar</button>
                     </div>
-                    <img src="https://logodownload.org/wp-content/uploads/2014/07/cartao-visa-logo.png" height="20" class="me-2 opacity-50">
-                    <img src="https://logodownload.org/wp-content/uploads/2014/07/mastercard-logo.png" height="20" class="opacity-50">
+
+                    <div class="mt-4 mb-3 d-flex justify-content-md-end justify-content-center gap-3 grayscale-filter">
+                        <img src="https://logodownload.org/wp-content/uploads/2014/07/cartao-visa-logo.png" height="20" title="Visa">
+                        <img src="https://logodownload.org/wp-content/uploads/2014/07/mastercard-logo.png" height="20" title="Mastercard">
+                        <img src="https://logodownload.org/wp-content/uploads/2022/01/pix-logo-1.png" height="18" title="Pix">
+                    </div>
+
+                    <div class="d-flex justify-content-md-end justify-content-center gap-2 mt-2">
+                        <span class="badge bg-light text-muted border py-2 px-3 fw-normal">
+                            <i class="bi bi-shield-lock-fill text-success me-1"></i> Site Blindado
+                        </span>
+                        <span class="badge bg-light text-muted border py-2 px-3 fw-normal">
+                            <i class="bi bi-google text-primary me-1"></i> Google Safe Browsing
+                        </span>
+                    </div>
                 </div>
             </div>
+
             <hr class="my-4 opacity-25">
-            <div class="text-center text-muted small">
-                © 2025 Empório Della Casa. Beba com moderação. Venda proibida para menores de 18 anos.
+
+            <div class="row align-items-center text-muted small">
+                <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
+                    © 2025 <strong>Empório Della Casa</strong>. Todos os direitos reservados.
+                </div>
+                <div class="col-md-6 text-center text-md-end fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">
+                    BEBA COM MODERAÇÃO. VENDA PROIBIDA PARA MENORES DE 18 ANOS.
+                </div>
             </div>
         </div>
     </footer>

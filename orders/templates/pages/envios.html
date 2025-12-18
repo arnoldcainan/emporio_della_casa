@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5 mt-5 fade-in">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <h1 class="fw-bold text-burgundy mb-4 text-center">Envios e Prazos</h1>
+            <div class="card border-0 shadow-sm p-5 rounded-5 bg-white">
+                <div class="row g-4 mb-5 text-center">
+                    <div class="col-md-4">
+                        <i class="bi bi-box-seam fs-1 text-burgundy"></i>
+                        <h6 class="fw-bold mt-2">Embalagem Segura</h6>
+                        <p class="small text-muted">Caixas anti-impacto reforçadas.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <i class="bi bi-truck fs-1 text-burgundy"></i>
+                        <h6 class="fw-bold mt-2">Logística VIP</h6>
+                        <p class="small text-muted">Transportadoras especializadas em vinhos.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <i class="bi bi-geo-alt fs-1 text-burgundy"></i>
+                        <h6 class="fw-bold mt-2">Rastreamento</h6>
+                        <p class="small text-muted">Acompanhe cada passo do seu pedido.</p>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold text-burgundy">Prazos de Entrega</h5>
+                <p>O prazo é calculado no checkout com base no seu CEP. Para **São José dos Campos e região**, trabalhamos com entregas expressas em até 24h úteis após aprovação.</p>
+
+                <h5 class="fw-bold mt-4 text-burgundy">Horários de Entrega</h5>
+                <p>As entregas ocorrem de segunda a sexta-feira, das 08h às 20h. É indispensável que haja alguém maior de 18 anos para receber e assinar o comprovante.</p>
+
+                <h5 class="fw-bold mt-4 text-burgundy">Custo do Frete</h5>
+                <p>O valor do frete varia conforme a localidade e o peso do pedido. Fique atento às nossas campanhas de <strong>Frete Grátis</strong> usando cupons específicos para sua cidade.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

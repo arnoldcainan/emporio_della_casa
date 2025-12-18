@@ -1,6 +1,7 @@
 from django.db import models
 from products.models import Product
 from decimal import Decimal
+from coupons.models import Coupon
 
 
 class Order(models.Model):
@@ -22,6 +23,13 @@ class Order(models.Model):
     utm_campaign = models.CharField(max_length=100, blank=True, null=True)
     shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
+    coupon = models.ForeignKey(Coupon,
+                               related_name='orders',
+                               null=True,
+                               blank=True,
+                               on_delete=models.SET_NULL)
+    discount = models.IntegerField(default=0)
+
     class Meta:
         ordering = ['-created']
 
@@ -29,9 +37,10 @@ class Order(models.Model):
         return f'Pedido {self.id}'
 
     def get_total_cost(self):
-        subtotal = sum(item.get_cost() for item in self.items.all())
-        # Convertemos o shipping_cost para Decimal caso ele seja float
-        return Decimal(subtotal) + Decimal(self.shipping_cost)
+        total_items = sum(item.get_cost() for item in self.items.all())
+        # Aplica o desconto se houver
+        discount_amount = total_items * (Decimal(self.discount) / Decimal(100))
+        return (total_items - discount_amount) + Decimal(self.shipping_cost)
 
 
 class OrderItem(models.Model):

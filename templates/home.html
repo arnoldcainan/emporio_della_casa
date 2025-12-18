@@ -57,17 +57,26 @@
         </div>
     </section>
 
-    <div class="row mb-5 align-items-center bg-white rounded-5 shadow-sm p-4 mx-0 overflow-hidden border">
-        <div class="col-md-6 p-4">
-            <div class="badge bg-gold mb-3 text-dark fw-bold" style="background-color: var(--gold);">Winehunters</div>
-            <h2 class="display-6 fw-bold mb-3">Vinhos do Velho e Novo Mundo</h2>
-            <p class="text-muted">Nossa curadoria viaja pelas principais regiões vinícolas para trazer rótulos surpreendentes.</p>
-            <button class="btn btn-burgundy px-4 mt-2 shadow-sm">Conhecer Curadoria</button>
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row align-items-center bg-white rounded-5 shadow-sm overflow-hidden g-0 border">
+                <div class="col-md-6" style="min-height: 400px; background: url('https://images.unsplash.com/photo-1506377247377-2a5b3b0ca706?q=80&w=1000') center/cover;">
+                </div>
+
+                <div class="col-md-6 p-5">
+                    <div class="badge mb-3 text-dark fw-bold px-3 py-2" style="background-color: var(--gold); letter-spacing: 1px;">
+                        WINEHUNTERS
+                    </div>
+                    <h2 class="display-5 fw-bold mb-3 text-burgundy">Vinhos do Velho e Novo Mundo</h2>
+                    <p class="text-muted lead">Nossa curadoria viaja pelas principais regiões vinícolas para trazer rótulos surpreendentes, conectando você ao melhor de cada terroir.</p>
+
+                    <a href="{% url 'orders:winehunters' %}" class="btn btn-burgundy btn-lg px-5 mt-3 shadow-sm rounded-pill fw-bold">
+                        Conhecer Curadoria <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
         </div>
-        <div class="col-md-6 text-center d-none d-md-block">
-             <i class="bi bi-globe-americas display-1 opacity-25" style="color: var(--burgundy);"></i>
-        </div>
-    </div>
+    </section>
 
     <section>
         <div class="d-flex justify-content-between align-items-end mb-4">

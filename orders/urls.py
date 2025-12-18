@@ -6,6 +6,7 @@ app_name = 'orders'
 
 urlpatterns = [
     path('finalizar/', views.order_create, name='order_create'),
-    path('ajax/get-shipping/', views.get_shipping_quote, name='get_shipping_quote'),
+    path('get-shipping-quote/', views.get_shipping_quote, name='get_shipping_quote'),
+    path('rastrear/', views.track_orders, name='track_orders'),
     path('webhook/asaas/', views.asaas_webhook, name='asaas_webhook'),
 ]

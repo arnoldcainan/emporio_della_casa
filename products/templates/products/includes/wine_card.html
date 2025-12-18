@@ -1,0 +1,31 @@
+<div class="col-lg-3 col-md-4 col-6 mb-4">
+    <div class="card h-100 border-0 glass-card">
+        <div class="p-3 text-center position-relative">
+            {% if product.is_promotion %}
+                <span class="badge bg-danger position-absolute top-0 start-0 m-2 shadow-sm">Oferta</span>
+            {% endif %}
+
+            <div class="img-container" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" class="img-fluid wine-bottle" style="max-height: 180px;">
+                {% else %}
+                    <span class="text-muted small">Sem imagem</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card-body text-center p-3">
+            <small class="text-uppercase ls-2 text-muted fw-bold" style="font-size: 0.7rem;">{{ product.grape }}</small>
+            <h6 class="fw-bold mb-1 text-truncate" title="{{ product.name }}">{{ product.name }}</h6>
+            <p class="small text-muted mb-2" style="font-size: 0.75rem;">{{ product.winery }}</p>
+
+            <div class="mb-2">
+                <span class="text-burgundy fw-bold fs-5">R$ {{ product.price }}</span>
+            </div>
+
+            <button class="btn btn-burgundy btn-sm w-100 rounded-pill add-to-cart shadow-sm py-2" data-id="{{ product.id }}">
+                <i class="bi bi-cart-plus me-1"></i> Adicionar
+            </button>
+        </div>
+    </div>
+</div>

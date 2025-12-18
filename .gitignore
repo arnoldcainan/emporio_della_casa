@@ -18,3 +18,9 @@ staticfiles/
 # OS
 .DS_Store
 Thumbs.db
+
+# Ngrok
+ngrok
+ngrok.exe
+.ngrok2/
+ngrok.log

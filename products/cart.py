@@ -1,6 +1,7 @@
 # products/cart.py
 from decimal import Decimal
 from .models import Product
+from django.conf import settings
 
 
 class Cart:
@@ -51,6 +52,8 @@ class Cart:
             yield item
 
     def clear(self):
-        """Remove o carrinho da sessão"""
-        del self.session[settings.CART_SESSION_ID]
-        self.save()
+        # Remova a sessão usando a chave exata que você definiu no __init__
+        # Geralmente é 'cart'
+        if 'cart' in self.session:
+            del self.session['cart']
+            self.save()

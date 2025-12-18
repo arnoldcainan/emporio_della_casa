@@ -16,18 +16,15 @@ def order_create(request):
     if len(cart) == 0:
         return redirect('products:home')
 
+    form = OrderCreateForm(request.POST or None)
+
     if request.method == 'POST':
-        form = OrderCreateForm(request.POST)
         if form.is_valid():
             order = form.save(commit=False)
-
-            # Lógica de Frete e Marketing
             city = form.cleaned_data.get('city')
             order.shipping_cost = calculate_shipping(city)
-            order.utm_source = request.session.get('utm_source')
             order.save()
 
-            # Salva os itens do pedido no banco
             for item in cart:
                 OrderItem.objects.create(
                     order=order,
@@ -36,46 +33,29 @@ def order_create(request):
                     quantity=item['quantity']
                 )
 
-            # --- INTEGRAÇÃO ASAAS ---
             gateway = AsaasGateway()
+            payment_response = gateway.create_payment(order, billing_type='UNDEFINED')
+            payment_url = payment_response.get('invoiceUrl')
 
-            # Pegamos o método de pagamento do formulário (Ex: 'PIX' ou 'CREDIT_CARD')
-            # Se você ainda não tem esse campo no HTML, ele retornará 'UNDEFINED' por padrão
-            payment_method = request.POST.get('payment_method', 'UNDEFINED')
-
-            # 1. Cria a cobrança no Asaas
-            payment_response = gateway.create_payment(order, billing_type=payment_method)
-            print(f"DEBUG ASAAS PAYMENT: {payment_response}")
-
-            context = {
+            cart.clear()
+            return render(request, 'orders/created.html', {
                 'order': order,
-                'payment_url': payment_response.get('invoiceUrl'),
-                'billing_type': payment_response.get('billingType'),
-            }
+                'payment_url': payment_url
+            })
 
-            # 2. Se for PIX, buscamos o QR Code para renderizar em tela
-            if context['billing_type'] == 'PIX':
-                pix_data = gateway.get_pix_qr_code(payment_response.get('id'))
-                context['pix_data'] = pix_data
-                print(f"DEBUG ASAAS PIX: {pix_data}")
+        # Se o form for inválido, o código continua para o return lá embaixo
+        # carregando o form com os erros.
 
-            # Limpar o carrinho após o sucesso
-            request.session['cart'] = {}
-            request.session.modified = True # Ou request.session['cart'] = {}
-
-            return render(request, 'orders/created.html', context)
-    else:
-        form = OrderCreateForm()
-
+    # Esta linha DEVE estar fora do 'if request.method'
     return render(request, 'orders/create.html', {'cart': cart, 'form': form})
 
 def get_shipping_quote(request):
     city = request.GET.get('city', '')
     shipping_cost = calculate_shipping(city)
+    # Retornar como string evita problemas de precisão no JSON
     return JsonResponse({
-        'shipping_cost': str(shipping_cost),
+        'shipping_cost': "{:.2f}".format(shipping_cost),
     })
-
 
 @csrf_exempt
 def asaas_webhook(request):
@@ -100,3 +80,18 @@ def asaas_webhook(request):
 
         return HttpResponse(status=200)
     return HttpResponse(status=400)
+
+
+def track_orders(request):
+    email = request.GET.get('email')
+    orders = None
+
+    if email:
+        # Buscamos os pedidos filtrando pelo email e usamos prefetch_related
+        # para carregar os vinhos de uma vez só e deixar a página rápida.
+        orders = Order.objects.filter(email=email).prefetch_related('items__product').order_by('-created')
+
+    return render(request, 'orders/track.html', {
+        'orders': orders,
+        'email': email
+    })

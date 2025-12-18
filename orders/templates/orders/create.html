@@ -1,146 +1,180 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<div class="container py-5">
-    <div class="row">
-        <div class="col-md-7">
-            <h3 class="mb-4 fw-bold">📍 Dados de Entrega</h3>
-            <div class="card p-4 shadow-sm border-0">
-                <form action="." method="post" novalidate>
+<div class="container py-5 fade-in">
+    <div class="row g-5">
+        <div class="col-lg-7">
+            <h2 class="fw-bold mb-4" style="color: var(--burgundy);">Finalizar Seleção</h2>
+            <div class="card border-0 shadow-lg p-4 rounded-5 glass-card">
+                <form method="post" id="checkout-form" class="row g-3">
                     {% csrf_token %}
 
-                    <div class="row g-3">
-                        {% for field in form %}
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.errors %}
-                                <div class="text-danger small">{{ field.errors|first }}</div>
-                            {% endif %}
-                        </div>
-                        {% endfor %}
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Nome</label>
+                        {{ form.first_name }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Sobrenome</label>
+                        {{ form.last_name }}
+                    </div>
+                    <div class="col-md-7">
+                        <label class="form-label small fw-bold text-muted text-uppercase">E-mail</label>
+                        {{ form.email }}
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label small fw-bold text-muted text-uppercase">WhatsApp / Celular</label>
+                        <input type="text" name="phone" id="id_phone" class="form-control" placeholder="(00) 00000-0000" required>
                     </div>
 
-                    <hr class="my-4">
-                    <h4 class="fw-bold mb-3">💳 Forma de Pagamento</h4>
-                    <div class="bg-light p-3 rounded mb-3">
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="payment_method" id="pay_pix" value="PIX" checked>
-                            <label class="form-check-label fw-bold" for="pay_pix">
-                                <i class="bi bi-qr-code"></i> PIX (Aprovação imediata e QR Code na tela)
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="payment_method" id="pay_card" value="CREDIT_CARD">
-                            <label class="form-check-label fw-bold" for="pay_card">
-                                <i class="bi bi-credit-card"></i> Cartão de Crédito (Parcelado em até 12x)
-                            </label>
+                    <div class="col-md-4 mt-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase">CEP</label>
+                        <div class="input-group">
+                            {{ form.postal_code }}
+                            <span class="input-group-text bg-white border-start-0" id="cep-spinner" style="display:none;">
+                                <div class="spinner-border spinner-border-sm text-burgundy" role="status"></div>
+                            </span>
                         </div>
                     </div>
 
-                    <div class="alert alert-warning mt-3 small">
-                        <i class="bi bi-info-circle"></i> O frete será atualizado assim que você digitar a cidade e clicar fora do campo.
+                    <div class="col-md-8 mt-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Logradouro (Rua/Av)</label>
+                        <input type="text" name="address" id="id_address" class="form-control bg-light" readonly placeholder="Preenchido pelo CEP">
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-lg mt-2 w-100 fw-bold shadow">
-                        Confirmar e Finalizar Pedido
-                    </button>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Cidade</label>
+                        <input type="text" name="city" id="id_city" class="form-control bg-light" readonly>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Número / Compl.</label>
+                        <input type="text" name="address_number" id="id_number" class="form-control" placeholder="Ex: 123, Ap 42" required>
+                    </div>
+
+                    <div class="col-12 mt-4">
+                        <button type="submit" class="btn btn-burgundy btn-lg w-100 py-3 fw-bold shadow">
+                            Finalizar e Escolher Forma de Pagamento <i class="bi bi-credit-card-2-back ms-2"></i>
+                        </button>
+                        <div class="text-center mt-3">
+                            <img src="https://img.icons8.com/color/48/000000/visa.png" width="30">
+                            <img src="https://img.icons8.com/color/48/000000/mastercard.png" width="30">
+                            <img src="https://img.icons8.com/color/48/000000/pix.png" width="30">
+                            <p class="small text-muted mt-2">Pagamento seguro via Asaas</p>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>
 
-        <div class="col-md-5">
-            <div class="card p-4 bg-light border-0 shadow-sm">
-                <h4 class="fw-bold mb-4 text-dark">Resumo da Compra</h4>
+        <div class="col-lg-5">
+            <h2 class="fw-bold mb-4" style="color: var(--burgundy);">Resumo</h2>
+            <div class="card border-0 shadow-lg p-4 rounded-5 bg-white sticky-top" style="top: 100px;">
+                {% for item in cart %}
+                <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
+                    <span>{{ item.quantity }}x {{ item.product.name }}</span>
+                    <span class="fw-bold">R$ {{ item.total_price }}</span>
+                </div>
+                {% endfor %}
 
-                <div class="mb-3 border-bottom pb-3">
-                    {% for item in cart %}
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-muted">{{ item.quantity }}x {{ item.product.name }}</span>
-                        <span class="fw-bold">R$ {{ item.total_price }}</span>
-                    </div>
-                    {% endfor %}
+                <div class="d-flex justify-content-between mt-3">
+                    <span class="text-muted small text-uppercase">Subtotal</span>
+                    <span class="fw-bold text-dark">R$ {{ cart.get_total_price }}</span>
                 </div>
 
-                <div class="d-flex justify-content-between mb-2">
-                    <span>Subtotal</span>
-                    <span class="fw-bold">R$ <span id="subtotal-val" data-value="{{ cart.get_total_price|stringformat:'.2f' }}">{{ cart.get_total_price }}</span></span>
-                </div>
-
-                <div class="d-flex justify-content-between mb-2">
-                    <span>Frete</span>
-                    <span class="text-primary fw-bold" id="shipping-val">Digite a cidade...</span>
+                <div class="d-flex justify-content-between mb-2 mt-2">
+                    <span class="text-muted small text-uppercase">Frete</span>
+                    <span id="shipping-value" class="fw-bold text-success">Calculando...</span>
                 </div>
 
                 <hr class="my-3">
 
-                <div class="d-flex justify-content-between h4 fw-bold text-success">
+                <div class="h3 fw-bold text-burgundy d-flex justify-content-between mb-0">
                     <span>Total</span>
-                    <span>R$ <span id="total-val">{{ cart.get_total_price }}</span></span>
+                    <span id="total-value">R$ {{ cart.get_total_price }}</span>
                 </div>
-
-                <p class="text-muted small mt-4 text-center">
-                    <i class="bi bi-shield-lock-fill"></i> Checkout Seguro Empório Della Casa
-                </p>
+                <small class="text-muted">Total inclui frete selecionado por região.</small>
             </div>
         </div>
     </div>
 </div>
 
-<style>
-    input[type="text"], input[type="email"], input[type="number"], select, textarea {
-        display: block;
-        width: 100%;
-        padding: 0.6rem 0.75rem;
-        font-size: 1rem;
-        color: #212529;
-        background-color: #fff;
-        border: 1px solid #dee2e6;
-        border-radius: 0.5rem;
-        transition: border-color .15s ease-in-out;
-    }
-    input:focus {
-        border-color: #0d6efd;
-        outline: 0;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
-    }
-    /* Estilo para não quebrar os radios do Bootstrap */
-    .form-check-input {
-        width: 1em;
-        display: inline-block;
-    }
-</style>
-
+<script src="https://unpkg.com/imask"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const cityInput = document.querySelector('input[name="city"]');
-        const shippingDisplay = document.getElementById('shipping-val');
-        const totalDisplay = document.getElementById('total-val');
-        const subtotalElement = document.getElementById('subtotal-val');
+// 1. MÁSCARAS
+const phoneMask = IMask(document.getElementById('id_phone'), { mask: '(00) 00000-0000' });
+const cepElement = document.getElementById('id_postal_code');
+const cepMask = IMask(cepElement, { mask: '00000-000' });
 
-        if (cityInput && subtotalElement) {
-            const subtotal = parseFloat(subtotalElement.getAttribute('data-value'));
+// 2. VALORES INICIAIS (Django para JS)
+// Convertemos a string do Django "100,00" para o número 100.00
+const cartTotalInitial = parseFloat("{{ cart.get_total_price }}".replace(',', '.'));
 
-            cityInput.addEventListener('blur', function() {
-                const city = this.value;
-                if (city.length > 2) {
-                    shippingDisplay.innerText = "Calculando...";
+// 3. LÓGICA DE CEP E FRETE
+cepElement.addEventListener('blur', function() {
+    const cep = this.value.replace(/\D/g, '');
+    if (cep.length === 8) {
+        document.getElementById('cep-spinner').style.display = 'block';
+        document.getElementById('shipping-value').innerText = "Calculando...";
 
-                    fetch(`/orders/ajax/get-shipping/?city=${encodeURIComponent(city)}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            const shippingCost = parseFloat(data.shipping_cost);
-                            shippingDisplay.innerText = `R$ ${shippingCost.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-                            const totalFinal = subtotal + shippingCost;
-                            totalDisplay.innerText = totalFinal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        fetch(`https://viacep.com.br/ws/${cep}/json/`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.erro) {
+                    // Preenche campos de endereço
+                    document.getElementById('id_address').value = `${data.logradouro}, ${data.bairro}`;
+                    document.getElementById('id_city').value = data.localidade;
+                    document.getElementById('id_number').focus();
+
+                    // Consulta Frete no Backend
+                    fetch(`/orders/get-shipping-quote/?city=${encodeURIComponent(data.localidade)}`)
+                        .then(res => res.json())
+                        .then(shippingData => {
+                            const shippingCost = parseFloat(shippingData.shipping_cost);
+                            const finalTotal = cartTotalInitial + shippingCost;
+
+                            // Atualiza interface com formatação brasileira
+                            document.getElementById('shipping-value').innerText =
+                                `R$ ${shippingCost.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+
+                            document.getElementById('total-value').innerText =
+                                `R$ ${finalTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                         })
-                        .catch(error => {
-                            console.error('Erro:', error);
-                            shippingDisplay.innerText = "Erro ao calcular";
+                        .catch(() => {
+                            document.getElementById('shipping-cost').innerText = "Erro ao calcular";
                         });
+                } else {
+                    alert("CEP não encontrado.");
                 }
+            })
+            .finally(() => {
+                document.getElementById('cep-spinner').style.display = 'none';
             });
-        }
-    });
+    }
+});
+
+// 4. AJAX DA HOME (Suporte para adições extras)
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.add-to-cart');
+    if (btn) {
+        e.preventDefault();
+        const productId = btn.dataset.id;
+        btn.disabled = true;
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+        fetch(`/add/${productId}/`)
+            .then(res => res.json())
+            .then(data => {
+                const badge = document.getElementById('cart-badge');
+                if (badge) {
+                    badge.innerText = data.cart_count;
+                    badge.classList.remove('d-none');
+                }
+                btn.classList.replace('btn-burgundy', 'btn-success');
+                btn.innerHTML = '✅ Adicionado';
+                // Recarrega a página para atualizar o resumo se o usuário adicionar itens aqui
+                setTimeout(() => { location.reload(); }, 1000);
+            });
+    }
+});
 </script>
 {% endblock %}

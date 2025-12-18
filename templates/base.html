@@ -5,28 +5,123 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Empório Della Casa - Vinhos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
+    <style>
+        :root {
+            --burgundy: #4A0404;
+            --gold: #D4AF37;
+            --glass: rgba(255, 255, 255, 0.7);
+        }
+        
+        body { 
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            font-family: 'Inter', sans-serif;
+            color: #2d2d2d;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, .navbar-brand { font-family: 'Playfair Display', serif; }
+
+        .navbar-glass {
+            background: rgba(255, 255, 255, 0.6) !important;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-burgundy { 
+            background: var(--burgundy); 
+            color: white; 
+            border-radius: 50px; 
+            border: none;
+            transition: 0.3s;
+        }
+        .btn-burgundy:hover { background: #630606; color: var(--gold); transform: scale(1.02); }
+
+        .fade-in { animation: fadeIn 0.8s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg sticky-top navbar-glass shadow-sm">
         <div class="container">
-            <a class="navbar-brand" href="/">Empório Della Casa</a>
-            <div class="ms-auto">
-                <a href="{% url 'products:cart_detail' %}" class="btn btn-outline-light position-relative">
-                    🛒 Carrinho
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                        {{ cart|length }}
-                    </span>
-                </a>
+            <a class="navbar-brand fs-3 fw-bold" href="{% url 'products:home' %}" style="color: var(--burgundy);">
+                🍷 Empório Della Casa
+            </a>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link px-3 fw-bold" href="{% url 'products:home' %}" style="color: var(--burgundy);">Loja</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link px-3" href="{% url 'orders:track_orders' %}" style="color: var(--burgundy);">
+                            <i class="bi bi-box-seam me-1"></i> Meus Pedidos
+                        </a>
+                    </li>
+                    <li class="nav-item ms-3">
+                        <a href="{% url 'products:cart_detail' %}" class="btn btn-outline-dark rounded-circle p-2 position-relative">
+                            <i class="bi bi-cart3"></i>
+                            {% with total_items=cart|length %}
+                                <span id="cart-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger {% if total_items == 0 %}d-none{% endif %}">
+                                    {{ total_items }}
+                                </span>
+                            {% endwith %}
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container mt-4">
+    <div class="container mt-5 fade-in">
         {% block content %}{% endblock %}
     </div>
-    <!--    TESTE de UTM -->
-    <!--    <span>Origem: {{ request.session.utm_source }}</span>-->
+    <footer class="mt-5 py-5 border-top bg-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h4 class="fw-bold text-burgundy mb-4">🍷 Empório Della Casa</h4>
+                    <p class="text-muted small">A maior curadoria de vinhos premium selecionada por especialistas para momentos únicos.</p>
+                    <div class="d-flex gap-3">
+                        <i class="bi bi-instagram fs-4"></i>
+                        <i class="bi bi-facebook fs-4"></i>
+                        <i class="bi bi-whatsapp fs-4"></i>
+                    </div>
+                </div>
+                <div class="col-md-2 mb-4">
+                    <h6 class="fw-bold mb-3">Categorias</h6>
+                    <ul class="list-unstyled small text-muted">
+                        <li>Tintos</li>
+                        <li>Brancos</li>
+                        <li>Espumantes</li>
+                        <li>Acessórios</li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-4">
+                    <h6 class="fw-bold mb-3">Ajuda</h6>
+                    <ul class="list-unstyled small text-muted">
+                        <li>Fale Conosco</li>
+                        <li>Trocas e Devoluções</li>
+                        <li>Prazos de Entrega</li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h6 class="fw-bold mb-3">Receba Ofertas Exclusivas</h6>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control border-0 bg-light" placeholder="Seu melhor e-mail">
+                        <button class="btn btn-burgundy">Assinar</button>
+                    </div>
+                    <img src="https://logodownload.org/wp-content/uploads/2014/07/cartao-visa-logo.png" height="20" class="me-2 opacity-50">
+                    <img src="https://logodownload.org/wp-content/uploads/2014/07/mastercard-logo.png" height="20" class="opacity-50">
+                </div>
+            </div>
+            <hr class="my-4 opacity-25">
+            <div class="text-center text-muted small">
+                © 2025 Empório Della Casa. Beba com moderação. Venda proibida para menores de 18 anos.
+            </div>
+        </div>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -6,6 +6,10 @@ from .services import calculate_shipping
 from django.http import JsonResponse
 from .gateway_service import AsaasGateway
 
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
+import json
+
 
 def order_create(request):
     cart = Cart(request)
@@ -71,3 +75,28 @@ def get_shipping_quote(request):
     return JsonResponse({
         'shipping_cost': str(shipping_cost),
     })
+
+
+@csrf_exempt
+def asaas_webhook(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        print(f"--- WEBHOOK RECEBIDO ---")
+        print(f"JSON: {data}")  # Isso vai mostrar tudo no seu terminal
+
+        event = data.get('event')
+        payment = data.get('payment', {})
+        external_reference = payment.get('externalReference')
+
+        if event in ['PAYMENT_CONFIRMED', 'PAYMENT_RECEIVED']:
+            try:
+                # O ID que o Asaas devolve no externalReference deve ser o ID do seu Pedido
+                order = Order.objects.get(id=external_reference)
+                order.paid = True
+                order.save()
+                print(f"✅ SUCESSO: Pedido {external_reference} atualizado!")
+            except Exception as e:
+                print(f"❌ ERRO AO SALVAR: {e}")
+
+        return HttpResponse(status=200)
+    return HttpResponse(status=400)

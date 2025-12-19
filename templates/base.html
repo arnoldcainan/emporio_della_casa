@@ -24,6 +24,21 @@
 
         h1, h2, h3, .navbar-brand { font-family: 'Playfair Display', serif; }
 
+        .navbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(0.8 rem, 4vw, 1.5rem) !important; /* Ajusta entre 1.2rem e 1.8rem conforme a tela */
+            white-space: nowrap; /* Impede que o nome quebre em duas linhas */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Se for muito grande para o celular, ele coloca '...' suavemente */
+        }
+        @media (max-width: 991px) {
+            .navbar-glass {
+                padding: 0.5rem 0;
+            }
+            .navbar-nav {
+                padding: 1.5rem 0; /* Dá respiro ao menu aberto no mobile */
+            }
+
         .navbar-glass {
             background: rgba(255, 255, 255, 0.6) !important;
             backdrop-filter: blur(15px);
@@ -67,42 +82,44 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg sticky-top navbar-glass shadow-sm">
-        <div class="container d-flex align-items-center">
+        <div class="container d-flex align-items-center justify-content-between">
 
-            <a class="navbar-brand fs-4 fw-bold me-auto" href="{% url 'products:home' %}" style="color: var(--burgundy);">
-                🍷 <span class="d-none d-sm-inline">Empório Della Casa</span>
+            <a class="navbar-brand d-flex align-items-center m-0" href="{% url 'products:home' %}" style="color: var(--burgundy);">
+                <span class="d-inline-block text-truncate" style="max-width: 200px; @media(min-width: 576px){ max-width: none; }">
+                    Empório Della Casa
+                </span>
             </a>
 
-            <div class="order-lg-2 ms-lg-3 d-flex align-items-center">
-                <a href="{% url 'products:cart_detail' %}" class="btn border-0 position-relative p-2" style="color: var(--burgundy); line-height: 1;">
+            <div class="d-flex align-items-center">
+
+                <a href="{% url 'products:cart_detail' %}" class="btn border-0 position-relative p-2 hvr-gold" style="color: var(--burgundy);">
                     <i class="bi bi-cart3 fs-4"></i>
                     {% with total_items=cart|length %}
                         <span id="cart-badge"
                               class="position-absolute badge rounded-pill bg-danger {% if total_items == 0 %}d-none{% endif %}"
-                              style="top: 0; right: 0; transform: translate(25%, -25%); font-size: 0.65rem; padding: 0.4em 0.6em; min-width: 1.2rem;">
+                              style="top: 5px; right: 0; font-size: 0.6rem; min-width: 18px;">
                             {{ total_items }}
                         </span>
                     {% endwith %}
                 </a>
 
-                <button class="navbar-toggler border-0 p-2 ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <button class="navbar-toggler border-0 ms-1 p-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon" style="width: 1.2em; height: 1.2em;"></span>
                 </button>
             </div>
 
-            <div class="collapse navbar-collapse order-lg-1" id="navbarNav">
-                <ul class="navbar-nav ms-auto pt-3 pt-lg-0 text-center text-lg-start">
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto fw-semibold">
                     <li class="nav-item">
-                        <a class="nav-link px-3 fw-bold" href="{% url 'products:home' %}" style="color: var(--burgundy);">Loja</a>
+                        <a class="nav-link px-3" href="{% url 'products:home' %}" style="color: var(--burgundy);">Loja</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link px-3" href="{% url 'orders:track_orders' %}" style="color: var(--burgundy);">
-                            <i class="bi bi-box-seam me-1"></i> Meus Pedidos
+                            Meus Pedidos
                         </a>
                     </li>
                 </ul>
             </div>
-
         </div>
     </nav>
 

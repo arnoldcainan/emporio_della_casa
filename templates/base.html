@@ -82,34 +82,29 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg sticky-top navbar-glass shadow-sm">
-        <div class="container d-flex align-items-center justify-content-between">
+        <div class="container">
 
             <a class="navbar-brand d-flex align-items-center m-0" href="{% url 'products:home' %}" style="color: var(--burgundy);">
-                <span class="d-inline-block text-truncate" style="max-width: 200px; @media(min-width: 576px){ max-width: none; }">
-                    Empório Della Casa
-                </span>
+                <span class="d-inline-block text-truncate">Empório Della Casa</span>
             </a>
 
-            <div class="d-flex align-items-center">
-
-                <a href="{% url 'products:cart_detail' %}" class="btn border-0 position-relative p-2 hvr-gold" style="color: var(--burgundy);">
+            <div class="d-flex align-items-center d-lg-none">
+                <a href="{% url 'products:cart_detail' %}" class="btn border-0 position-relative p-2" style="color: var(--burgundy);">
                     <i class="bi bi-cart3 fs-4"></i>
                     {% with total_items=cart|length %}
-                        <span id="cart-badge"
-                              class="position-absolute badge rounded-pill bg-danger {% if total_items == 0 %}d-none{% endif %}"
+                        <span class="position-absolute badge rounded-pill bg-danger {% if total_items == 0 %}d-none{% endif %}"
                               style="top: 5px; right: 0; font-size: 0.6rem; min-width: 18px;">
                             {{ total_items }}
                         </span>
                     {% endwith %}
                 </a>
-
                 <button class="navbar-toggler border-0 ms-1 p-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon" style="width: 1.2em; height: 1.2em;"></span>
                 </button>
             </div>
 
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto fw-semibold">
+                <ul class="navbar-nav ms-auto fw-semibold align-items-center text-center text-lg-start">
                     <li class="nav-item">
                         <a class="nav-link px-3" href="{% url 'products:home' %}" style="color: var(--burgundy);">Loja</a>
                     </li>
@@ -118,8 +113,21 @@
                             Meus Pedidos
                         </a>
                     </li>
+                    <li class="nav-item d-none d-lg-block ms-2">
+                        <a href="{% url 'products:cart_detail' %}" class="btn border-0 position-relative p-2 hvr-gold" style="color: var(--burgundy);">
+                            <i class="bi bi-cart3 fs-4"></i>
+                            {% with total_items=cart|length %}
+                                <span id="cart-badge"
+                                      class="position-absolute badge rounded-pill bg-danger {% if total_items == 0 %}d-none{% endif %}"
+                                      style="top: 5px; right: 0; font-size: 0.6rem; min-width: 18px;">
+                                    {{ total_items }}
+                                </span>
+                            {% endwith %}
+                        </a>
+                    </li>
                 </ul>
             </div>
+
         </div>
     </nav>
 

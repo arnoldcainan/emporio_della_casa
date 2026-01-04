@@ -104,30 +104,4 @@
     .glass-card:hover { transform: translateY(-10px); background: rgba(255, 255, 255, 0.8); }
 </style>
 
-<script>
-// AJAX Adicionar ao carrinho
-document.addEventListener('click', function(e) {
-    if (e.target.closest('.add-to-cart')) {
-        e.preventDefault();
-        const btn = e.target.closest('.add-to-cart');
-        const productId = btn.dataset.id;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-
-        fetch(`/add/${productId}/`)
-            .then(response => response.json())
-            .then(data => {
-                const badge = document.getElementById('cart-badge');
-                if (badge) { badge.innerText = data.cart_count; badge.classList.remove('d-none'); }
-                btn.classList.replace('btn-burgundy', 'btn-success');
-                btn.innerHTML = '✅ Adicionado';
-                setTimeout(() => {
-                    btn.classList.replace('btn-success', 'btn-burgundy');
-                    btn.innerHTML = '<i class="bi bi-cart-plus me-1"></i> Adicionar';
-                    btn.disabled = false;
-                }, 2000);
-            });
-    }
-});
-</script>
 {% endblock %}

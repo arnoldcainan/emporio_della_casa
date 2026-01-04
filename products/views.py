@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
+from django.shortcuts import redirect
 from .models import Product
 from .cart import Cart
 
@@ -15,17 +16,21 @@ def cart_add(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     cart.add(product=product, quantity=1)
 
-    return JsonResponse({
-        'cart_count': len(cart),
-        'message': f'{product.name} adicionado ao carrinho!'
-    })
+    # Se a requisição for AJAX (JavaScript Fetch)
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'total_items': len(cart),
+            'product_name': product.name,
+            'message': 'Adicionado com sucesso!'
+        })
+
+    # Se for um clique normal (sem JS), redireciona para o carrinho
+    return redirect('products:cart_detail')
 
 def cart_detail(request):
     cart = Cart(request)
     return render(request, 'cart_detail.html', {'cart': cart})
 
-
-from django.shortcuts import redirect
 
 
 def cart_remove(request, product_id):

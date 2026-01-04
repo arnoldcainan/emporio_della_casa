@@ -23,9 +23,10 @@
                 <span class="text-burgundy fw-bold fs-5">R$ {{ product.price }}</span>
             </div>
 
-            <button class="btn btn-burgundy btn-sm w-100 rounded-pill add-to-cart shadow-sm py-2" data-id="{{ product.id }}">
-                <i class="bi bi-cart-plus me-1"></i> Adicionar
-            </button>
+            <a href="{% url 'products:cart_add' product.id %}"
+               class="btn btn-burgundy btn-add-cart w-100 shadow-sm mt-auto">
+               <i class="bi bi-cart-plus me-1"></i> Adicionar
+            </a>
         </div>
     </div>
 </div>

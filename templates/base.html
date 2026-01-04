@@ -206,6 +206,49 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const btn = document.getElementById('wishlist-btn');
+        if (!btn) return;
+
+        const productId = btn.dataset.id;
+        const icon = document.getElementById('heart-icon');
+
+        // 1. Ao carregar a página, verifica se este ID está no LocalStorage
+        let favorites = JSON.parse(localStorage.getItem('emporio_favorites') || '[]');
+
+        if (favorites.includes(productId)) {
+            icon.classList.replace('bi-heart', 'bi-heart-fill');
+            icon.classList.add('text-danger');
+        }
+
+        // 2. Lógica de clique para Adicionar/Remover do Cache
+        btn.addEventListener('click', function() {
+            favorites = JSON.parse(localStorage.getItem('emporio_favorites') || '[]');
+
+            if (favorites.includes(productId)) {
+                // Remove do array
+                favorites = favorites.filter(id => id !== productId);
+                icon.classList.replace('bi-heart-fill', 'bi-heart');
+                icon.classList.remove('text-danger');
+            } else {
+                // Adiciona ao array
+                favorites.push(productId);
+                icon.classList.replace('bi-heart', 'bi-heart-fill');
+                icon.classList.add('text-danger');
+
+                // Pequena animação de batida de coração
+                icon.animate([
+                    { transform: 'scale(1)' },
+                    { transform: 'scale(1.4)' },
+                    { transform: 'scale(1)' }
+                ], { duration: 400 });
+            }
+
+            // Guarda de volta no navegador
+            localStorage.setItem('emporio_favorites', JSON.stringify(favorites));
+        });
+    });
+
     document.addEventListener('click', function(e) {
         // Detecta cliques em botões com a classe 'btn-add-cart' ou 'add-to-cart'
         const btn = e.target.closest('.btn-add-cart') || e.target.closest('.add-to-cart');

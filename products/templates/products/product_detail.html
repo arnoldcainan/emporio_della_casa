@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5 fade-in">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'products:home' %}" class="text-muted">Loja</a></li>
+            <li class="breadcrumb-item active text-burgundy fw-bold">{{ product.category.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-5">
+        <div class="col-md-6 text-center">
+            <div class="glass-card p-4 shadow-sm" style="border-radius: 30px;">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid" style="max-height: 500px;">
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <small class="text-uppercase ls-2 text-muted fw-bold">{{ product.winery }}</small>
+            <h1 class="display-4 fw-bold text-burgundy mb-3">{{ product.name }}</h1>
+            
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <span class="display-6 fw-bold text-dark">R$ {{ product.price }}</span>
+                {% if product.is_promotion %}
+                    <span class="badge bg-danger rounded-pill px-3">Oferta Especial</span>
+                {% endif %}
+            </div>
+
+            <p class="lead text-muted mb-5">{{ product.description }}</p>
+
+            <div class="row g-3 mb-5">
+                <div class="col-6 col-sm-4">
+                    <div class="border-start border-3 border-gold ps-3">
+                        <small class="d-block text-muted text-uppercase small fw-bold">Uva</small>
+                        <span class="fw-bold">{{ product.grape|default:"N/A" }}</span>
+                    </div>
+                </div>
+                <div class="col-6 col-sm-4">
+                    <div class="border-start border-3 border-gold ps-3">
+                        <small class="d-block text-muted text-uppercase small fw-bold">Safra</small>
+                        <span class="fw-bold">{{ product.vintage|default:"N/A" }}</span>
+                    </div>
+                </div>
+                <div class="col-6 col-sm-4">
+                    <div class="border-start border-3 border-gold ps-3">
+                        <small class="d-block text-muted text-uppercase small fw-bold">Teor</small>
+                        <span class="fw-bold">{{ product.alcohol_content|default:"0" }}%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-3 d-sm-flex">
+                <a href="{% url 'products:cart_add' product.id %}" 
+                   class="btn btn-burgundy btn-lg px-5 rounded-pill shadow-sm btn-add-cart">
+                    <i class="bi bi-cart-plus me-2"></i> Adicionar ao Carrinho
+                </a>
+                <button id="wishlist-btn"
+                        data-id="{{ product.id }}"
+                        class="btn btn-outline-dark btn-lg rounded-pill px-4 transition-all">
+                    <i id="heart-icon" class="bi bi-heart"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {% if related_products %}
+    <section class="mt-5 pt-5">
+        <h3 class="fw-bold text-burgundy mb-4 border-bottom pb-2">Quem viu este, também gostou</h3>
+        <div class="row">
+            {% for product in related_products %}
+                {% include "products/includes/wine_card.html" %}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

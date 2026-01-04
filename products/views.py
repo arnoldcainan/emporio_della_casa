@@ -58,3 +58,14 @@ def cart_update(request, product_id):
             cart.save()
 
     return redirect('products:cart_detail')
+
+
+def product_detail(request, slug):
+    product = get_object_or_404(Product, slug=slug, is_active=True)
+    # Busca 4 produtos da mesma categoria, excluindo o atual
+    related_products = Product.objects.filter(category=product.category, is_active=True).exclude(id=product.id)[:4]
+
+    return render(request, 'products/product_detail.html', {
+        'product': product,
+        'related_products': related_products
+    })

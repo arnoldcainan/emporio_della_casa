@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load course_tags %} {% block head %}
+<style>
+    /* Header do Curso */
+    .course-header-card {
+        background: #fff;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        border-left: 6px solid var(--primary-color); /* Verde Sálvia */
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Estilização do Acordeão (Módulos) */
+    .accordion-item {
+        border: none;
+        margin-bottom: 15px;
+        border-radius: 10px !important;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    .accordion-button {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--secondary-color);
+        background-color: #fff;
+        padding: 1.2rem;
+        transition: all 0.3s ease;
+    }
+
+    .accordion-button:hover {
+        background-color: #f8f9fa;
+    }
+
+    /* Estado Ativo (Aberto) */
+    .accordion-button:not(.collapsed) {
+        background-color: var(--secondary-color); /* Azul Petróleo */
+        color: #fff;
+        box-shadow: none;
+    }
+
+    .accordion-button:not(.collapsed)::after {
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
+
+    /* Lista de Aulas */
+    .lesson-item {
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+        padding: 1rem 1.5rem;
+        transition: background-color 0.2s;
+    }
+    .lesson-item:last-child {
+        border-bottom: none;
+    }
+    .lesson-item:hover {
+        background-color: #fdfdfd;
+    }
+
+    /* Botão Assistir */
+    .btn-play {
+        background-color: var(--bg-light);
+        color: var(--primary-color);
+        border: 1px solid transparent;
+        border-radius: 50px;
+        padding: 6px 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+    .btn-play:hover {
+        background-color: var(--primary-color);
+        color: white;
+        transform: translateX(5px);
+    }
+
+    /* Badge de aula assistida */
+    .viewed-text {
+        color: #198754; /* Verde Bootstrap */
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}" class="text-decoration-none text-muted">Meus Cursos</a></li>
+            <li class="breadcrumb-item active fw-bold" style="color: var(--primary-color);" aria-current="page">Grade Curricular</li>
+        </ol>
+    </nav>
+
+    {% course_progress user course as percent %}
+
+    <div class="course-header-card p-4 p-md-5 mb-5">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <span class="badge bg-light text-secondary mb-2 border">Curso Completo</span>
+                <h1 class="display-6 fw-bold text-dark mb-3">{{ course.title }}</h1>
+                <p class="lead text-muted mb-4" style="font-size: 1.1rem;">
+                    {{ course.description }}
+                </p>
+
+                <div class="d-flex align-items-center gap-3" style="max-width: 400px;">
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span class="fw-bold text-secondary">Seu Progresso</span>
+                            <span class="fw-bold text-primary">{{ percent }}%</span>
+                        </div>
+                        <div class="progress" style="height: 8px; border-radius: 4px;">
+                            <div class="progress-bar" role="progressbar"
+                                 style="width: {{ percent }}%; background-color: var(--primary-color);"
+                                 aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+                {% if percent == 100 %}
+                    <div class="card border-0 bg-success bg-opacity-10 p-3">
+                        <div class="text-center">
+                            <i class="bi bi-trophy-fill text-success fs-1 mb-2"></i>
+                            <h5 class="fw-bold text-success">Curso Concluído!</h5>
+                            <a href="{% url 'certificates:emit' course.id %}" class="btn btn-success rounded-pill fw-bold w-100 shadow-sm mt-2">
+                                <i class="bi bi-award-fill me-2"></i> Baixar Certificado
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="d-inline-block text-center p-3 rounded-3 bg-light border">
+                        <span class="d-block h4 fw-bold mb-0" style="color: var(--secondary-color);">{{ course.modules.count }}</span>
+                        <small class="text-uppercase text-muted" style="font-size: 0.75rem; letter-spacing: 1px;">Módulos</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <h4 class="mb-4 fw-bold" style="color: var(--secondary-color);">Conteúdo Programático</h4>
+
+    <div class="accordion" id="accordionModules">
+        {% for module in course.modules.all %}
+            <div class="accordion-item">
+
+                <h2 class="accordion-header" id="heading{{ module.id }}">
+                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#collapse{{ module.id }}"
+                            aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                            aria-controls="collapse{{ module.id }}">
+
+                        <div class="d-flex w-100 justify-content-between align-items-center me-3">
+                            <span>
+                                <span class="opacity-50 me-2">#{{ module.order }}</span>
+                                {{ module.title }}
+                            </span>
+                            <span class="badge bg-white text-dark rounded-pill fw-normal shadow-sm" style="font-size: 0.8rem;">
+                                {{ module.lessons.count }} aulas
+                            </span>
+                        </div>
+                    </button>
+                </h2>
+
+                <div id="collapse{{ module.id }}"
+                     class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+                     aria-labelledby="heading{{ module.id }}"
+                     data-bs-parent="#accordionModules">
+
+                    <div class="accordion-body p-0">
+                        <ul class="list-group list-group-flush">
+                            {% for lesson in module.lessons.all %}
+                                {% is_lesson_viewed user lesson as viewed %}
+
+                                <li class="list-group-item lesson-item d-flex justify-content-between align-items-center">
+
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3 text-center" style="width: 30px;">
+                                            {% if viewed %}
+                                                <i class="bi bi-check-circle-fill fs-5 text-success" title="Concluída"></i>
+                                            {% elif lesson.video_url %}
+                                                <i class="bi bi-play-circle-fill fs-5" style="color: var(--accent-color);"></i>
+                                            {% else %}
+                                                <i class="bi bi-file-text-fill fs-5" style="color: var(--text-secondary);"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <span class="fw-medium {% if viewed %}text-muted text-decoration-line-through{% else %}text-dark{% endif %}">
+                                                {{ lesson.title }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex align-items-center gap-3">
+                                        {% if viewed %}
+                                            <span class="viewed-text d-none d-md-block">Visto</span>
+                                        {% endif %}
+
+                                        <a href="{% url 'courses:lesson_detail' lesson.id %}" class="btn-play text-decoration-none">
+                                            {% if viewed %} Rever {% else %} Assistir {% endif %}
+                                            <i class="bi bi-arrow-right-short"></i>
+                                        </a>
+                                    </div>
+                                </li>
+                            {% empty %}
+                                <div class="text-center py-4 text-muted">
+                                    <i class="bi bi-cone-striped fs-4 d-block mb-2"></i>
+                                    <small>Conteúdo em breve.</small>
+                                </div>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="alert alert-light text-center py-5 border border-dashed">
+                <i class="bi bi-journal-x fs-1 text-muted mb-3"></i>
+                <h5>Nenhum módulo disponível</h5>
+                <p class="text-muted">O conteúdo deste curso está sendo preparado.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

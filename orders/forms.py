@@ -1,5 +1,7 @@
 from django import forms
 from .models import Order
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
 
 class OrderCreateForm(forms.ModelForm):
     class Meta:
@@ -34,3 +36,29 @@ class OrderCreateForm(forms.ModelForm):
         if len(digits_only) < 11:
             raise forms.ValidationError("O número de WhatsApp deve conter o DDD e mais 9 dígitos.")
         return phone
+
+
+class CustomUserCreationForm(UserCreationForm):
+    # Definimos o e-mail como campo obrigatório e proeminente
+    email = forms.EmailField(required=True, label="E-mail")
+    first_name = forms.CharField(required=True, label="Nome Completo")
+
+    class Meta(UserCreationForm.Meta):
+        model = User
+        # Exibimos apenas Nome e E-mail (o username será o próprio e-mail)
+        fields = ("first_name", "email",)
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email').lower().strip()
+        if User.objects.filter(username=email).exists():
+            raise forms.ValidationError("Este e-mail já está cadastrado.")
+        return email
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        email = self.cleaned_data["email"].lower().strip()
+        user.email = email
+        user.username = email  # Normalização: E-mail vira o Username
+        if commit:
+            user.save()
+        return user

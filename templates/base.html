@@ -13,6 +13,9 @@
             --burgundy: #4A0404;
             --gold: #D4AF37;
             --glass: rgba(255, 255, 255, 0.7);
+            --primary-color: #4A0404; /* Mapeando para o que o login espera */
+            --secondary-color: #630606;
+            --accent-color: #D4AF37;
         }
         
         body { 
@@ -38,6 +41,7 @@
             .navbar-nav {
                 padding: 1.5rem 0; /* Dá respiro ao menu aberto no mobile */
             }
+        } /* VOCÊ PRECISA FECHAR ESTA CHAVE AQUI */
 
         .navbar-glass {
             background: rgba(255, 255, 255, 0.6) !important;
@@ -113,6 +117,41 @@
                             Meus Pedidos
                         </a>
                     </li>
+
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link px-3 fw-bold" href="{% url 'courses:my_courses' %}" style="color: var(--burgundy);">
+                                <i class="bi bi-play-circle-fill me-1"></i> Minhas Aulas
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown ms-lg-2">
+                            <a class="nav-link dropdown-toggle btn btn-outline-burgundy btn-sm rounded-pill px-3 py-1 mt-2 mt-lg-0"
+                               href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Olá, {{ user.first_name|default:user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 p-2" aria-labelledby="userDropdown">
+                                <li>
+                                    <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
+                                        {% csrf_token %}
+                                    </form>
+
+                                    <a class="dropdown-item rounded-3 small py-2 hvr-burgundy"
+                                       href="javascript:void(0)"
+                                       onclick="document.getElementById('logout-form').submit();"
+                                       style="cursor: pointer;">
+                                        <i class="bi bi-box-arrow-right me-2 text-danger"></i>Sair da Conta
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item ms-lg-3">
+                            <a href="{% url 'login' %}" class="btn btn-burgundy btn-sm rounded-pill px-4 py-1 mt-2 mt-lg-0 shadow-sm">
+                                <i class="bi bi-person-fill me-1"></i> Entrar
+                            </a>
+                        </li>
+                    {% endif %}
+
                     <li class="nav-item d-none d-lg-block ms-2">
                         <a href="{% url 'products:cart_detail' %}" class="btn border-0 position-relative p-2 hvr-gold" style="color: var(--burgundy);">
                             <i class="bi bi-cart3 fs-4"></i>
@@ -151,9 +190,10 @@
                     <h6 class="fw-bold mb-3 text-uppercase small ls-2">Adega</h6>
                     <ul class="list-unstyled small text-muted lh-lg">
                         <li><a href="{% url 'products:home' %}?category=tintos" class="text-reset text-decoration-none hvr-burgundy">Tintos</a></li>
-                        <li><a href="{% url 'products:home' %}?category=brancos" class="text-reset text-decoration-none hvr-burgundy">Brancos</a></li>
-                        <li><a href="{% url 'products:home' %}?category=espumantes" class="text-reset text-decoration-none hvr-burgundy">Espumantes</a></li>
                         <li><a href="{% url 'orders:track_orders' %}" class="text-reset text-decoration-none hvr-burgundy fw-bold mt-2 d-block">Meus Pedidos</a></li>
+                        {% if user.is_authenticated %}
+                            <li><a href="{% url 'courses:my_courses' %}" class="text-reset text-decoration-none hvr-burgundy fw-bold d-block">Minhas Aulas</a></li>
+                        {% endif %}
                     </ul>
                 </div>
 

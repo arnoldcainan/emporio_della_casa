@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+
+                <div class="card-header border-0 text-center py-5 text-white"
+                     style="background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));">
+                    <div class="mb-3">
+                        <i class="bi bi-cart-check-fill" style="font-size: 4rem;"></i>
+                    </div>
+                    <h2 class="fw-bold mb-0">Checkout Seguro</h2>
+                    <p class="opacity-75">Você está a um passo de começar.</p>
+                </div>
+
+                <div class="card-body p-5">
+
+                    <div class="text-center mb-4">
+                        <h5 class="text-muted text-uppercase small ls-1 fw-bold">Você está comprando:</h5>
+                        <h3 class="fw-bold text-dark mt-2">{{ course.title }}</h3>
+                    </div>
+
+                    <div class="bg-light rounded-3 p-4 mb-4 border border-dashed">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Valor do Curso</span>
+                            <span class="fw-bold">R$ {{ course.price }}</span>
+                        </div>
+
+                        {% if final_price != course.price %}
+                        <div class="d-flex justify-content-between align-items-center mb-2 text-success">
+                            <span><i class="bi bi-tag-fill me-1"></i> Desconto</span>
+                            <span>Aplicado</span>
+                        </div>
+                        {% endif %}
+
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="h5 fw-bold mb-0">Total</span>
+                            <span class="h4 fw-bold text-primary mb-0">R$ {{ final_price|floatformat:2 }}</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        {% if coupon %}
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="remove_coupon" value="true">
+                                <div class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-0">
+                                    <small><i class="bi bi-check-circle me-1"></i> Cupom <strong>{{ coupon.code }}</strong> aplicado!</small>
+                                    <button type="submit" class="btn btn-sm btn-link text-danger text-decoration-none p-0 fw-bold">Remover</button>
+                                </div>
+                            </form>
+                        {% else %}
+                            <form method="post" class="input-group">
+                                {% csrf_token %}
+                                <input type="text" name="coupon_code" class="form-control" placeholder="Possui cupom de desconto?">
+                                <button type="submit" name="apply_coupon" value="true" class="btn btn-outline-secondary">Aplicar</button>
+                            </form>
+                        {% endif %}
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="finish_payment" value="true">
+
+                        <div class="mb-4 text-start">
+                            <label for="cpf_input" class="form-label fw-bold small text-secondary">CPF DO TITULAR</label>
+                            <input type="text"
+                                   class="form-control form-control-lg bg-light"
+                                   id="cpf_input"
+                                   name="cpf"
+                                   placeholder="000.000.000-00"
+                                   value="{{ user.profile.cpf|default:'' }}"
+                                   maxlength="14"
+                                   oninput="mascaraCPF(this)"
+                                   required>
+                            <div class="form-text small">Necessário para emissão da nota fiscal.</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg py-3 fw-bold rounded-pill shadow-sm pulse-button">
+                                <i class="bi bi-qr-code-scan me-2"></i> Pagar e Liberar Acesso
+                            </button>
+
+                            <a href="{% url 'dashboard' %}" class="btn btn-link text-muted text-decoration-none mt-2">
+                                Cancelar e Voltar
+                            </a>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-4 pt-3 border-top">
+                        <small class="text-muted d-block mb-2">Pagamento processado via Asaas</small>
+                        <div class="d-flex justify-content-center gap-3 opacity-50">
+                            <i class="bi bi-shield-lock-fill fs-4" title="Ambiente Seguro"></i>
+                            <i class="bi bi-credit-card-2-front-fill fs-4" title="Cartão"></i>
+                            <i class="bi bi-bank fs-4" title="Pix"></i>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    /* Animação suave para o botão de pagar */
+    @keyframes pulse-green {
+        0% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(25, 135, 84, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0); }
+    }
+    .pulse-button {
+        animation: pulse-green 2s infinite;
+    }
+</style>
+
+<script>
+    function mascaraCPF(i) {
+        var v = i.value;
+        if(isNaN(v[v.length-1])){
+           i.value = v.substring(0, v.length-1);
+           return;
+        }
+        i.setAttribute("maxlength", "14");
+        v = v.replace(/\D/g, "")
+        v = v.replace(/(\d{3})(\d)/, "$1.$2")
+        v = v.replace(/(\d{3})(\d)/, "$1.$2")
+        v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2")
+        i.value = v;
+    }
+</script>
+{% endblock %}

@@ -42,9 +42,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'widget_tweaks',
     'products',
     'orders',
     'coupons',
+    'courses',
+    'financial',
 ]
 
 MIDDLEWARE = [
@@ -212,3 +215,9 @@ JAZZMIN_UI_TUNER = {
 CSRF_TRUSTED_ORIGINS = [
     'https://emporiodellacasa-production.up.railway.app',
 ]
+
+# Após o login, leva o cliente para a área de cursos
+LOGIN_REDIRECT_URL = '/cursos/meus-cursos/'
+
+# Se o cliente tentar acessar uma aula sem estar logado, ele é mandado para cá
+LOGIN_URL = 'login'

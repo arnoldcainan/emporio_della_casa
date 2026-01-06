@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <h2 class="fw-bold mb-4" style="color: var(--burgundy);">Minha Adega de Conhecimento</h2>
+            <p class="text-muted mb-5">Aqui estão os cursos e masterclasses liberados para você.</p>
+
+            <div class="row g-4">
+                {% for enrollment in enrollments %}
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 bg-white">
+                        <div class="card-body p-4 text-center">
+                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3"
+                                 style="width: 70px; height: 70px;">
+                                <i class="bi bi-mortarboard fs-2" style="color: var(--burgundy);"></i>
+                            </div>
+                            <h5 class="fw-bold mb-2">{{ enrollment.course.title }}</h5>
+                            <p class="small text-muted mb-4">{{ enrollment.course.description|truncatechars:80 }}</p>
+
+                            <a href="{% url 'courses:detail' enrollment.course.id %}" class="btn btn-burgundy w-100 rounded-pill fw-bold">
+                                Acessar Curso
+                            </a>
+                        </div>
+                        <div class="card-footer bg-light border-0 py-2 text-center">
+                            <small class="text-muted">Inscrito em: {{ enrollment.date_enrolled|date:"d/m/Y" }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <i class="bi bi-journal-x display-1 text-muted opacity-25"></i>
+                    <h5 class="mt-4 text-muted">Você ainda não possui cursos liberados.</h5>
+                    <p>Adquira nossos vinhos selecionados para ganhar acessos exclusivos!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

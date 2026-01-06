@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+{% load course_tags %}
+
+{% block head %}
+<style>
+    /* Ajustes Específicos para a Sala de Aula */
+
+    /* Sidebar da lista de aulas */
+    .lesson-sidebar {
+        background-color: #fff;
+        border-radius: 12px;
+        overflow: hidden; /* Para arredondar cantos internos */
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .lesson-sidebar-header {
+        background-color: var(--secondary-color); /* Azul Petróleo */
+        color: white;
+        padding: 1.5rem;
+    }
+
+    /* Item da lista */
+    .lesson-item {
+        border: none;
+        border-bottom: 1px solid #f1f1f1;
+        padding: 1rem 1.2rem;
+        transition: all 0.2s ease;
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+    }
+
+    .lesson-item:hover {
+        background-color: #f8f9fa;
+        color: var(--primary-color);
+        padding-left: 1.5rem; /* Efeito de movimento leve */
+    }
+
+    /* Item Ativo (Aula atual) */
+    .lesson-item.active-lesson {
+        background-color: #eefbf9; /* Verde muito claro */
+        color: var(--primary-color); /* Verde Sálvia */
+        font-weight: 600;
+        border-left: 4px solid var(--primary-color);
+    }
+
+    /* Conteúdo de Texto */
+    .lesson-content {
+        font-family: 'Inter', sans-serif;
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #333;
+    }
+
+    /* Cards */
+    .video-card {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        border: none;
+        background: #000;
+    }
+
+    .content-card {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+        background: white;
+    }
+
+    /* Botões de Navegação */
+    .nav-btn {
+        border-radius: 50px;
+        padding: 10px 25px;
+        font-weight: 500;
+        transition: transform 0.2s;
+    }
+    .nav-btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .nav-btn-prev {
+        border: 1px solid #ddd;
+        color: #666;
+    }
+    .nav-btn-prev:hover {
+        background-color: #f0f0f0;
+        color: #333;
+    }
+
+    .btn-next {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+        box-shadow: 0 4px 15px rgba(42, 157, 143, 0.3);
+    }
+    .btn-next:hover {
+        background-color: var(--primary-dark);
+        color: white;
+    }
+
+    .btn-exam {
+        background-color: var(--accent-color); /* Amarelo Areia */
+        color: var(--secondary-color);
+        border: none;
+        font-weight: 700;
+        box-shadow: 0 4px 15px rgba(233, 196, 106, 0.4);
+    }
+    .btn-exam:hover {
+        background-color: #dcb050;
+        color: var(--secondary-color);
+    }
+
+    .btn-check-lesson {
+        border-radius: 50px;
+        padding: 8px 20px;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lesson-container py-5">
+    <div class="container">
+
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}" class="text-decoration-none text-muted">Meus Cursos</a></li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'courses:detail' lesson.module.course.id %}" class="text-decoration-none" style="color: var(--primary-color);">
+                        {{ lesson.module.course.title }}
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{{ lesson.title }}</li>
+            </ol>
+        </nav>
+
+        <div class="row g-4">
+            <!-- COLUNA ESQUERDA -->
+            <div class="col-lg-8">
+
+                <!-- Player de Vídeo Inteligente -->
+                {% if lesson.video_url %}
+                    <div class="card video-card mb-4">
+                        <div class="ratio ratio-16x9">
+                            {% if lesson.get_video_type == 'youtube' %}
+                                <iframe src="https://www.youtube.com/embed/{{ lesson.get_video_id }}?rel=0&modestbranding=1" title="{{ lesson.title }}" allowfullscreen style="border:0;"></iframe>
+                            {% elif lesson.get_video_type == 'vimeo' %}
+                                <iframe src="https://player.vimeo.com/video/{{ lesson.get_video_id }}" title="{{ lesson.title }}" allow="autoplay; fullscreen" allowfullscreen style="border:0;"></iframe>
+                            {% elif lesson.get_video_type == 'bunny' %}
+                                <iframe src="{{ lesson.video_url }}" title="{{ lesson.title }}" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true" style="border:0;"></iframe>
+                            {% else %}
+                                <div class="d-flex align-items-center justify-content-center bg-dark text-white h-100">
+                                    <p>Link de vídeo não reconhecido ou formato inválido.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Card de Conteúdo -->
+                <div class="card content-card mb-4">
+                    <div class="card-body p-4 p-md-5">
+
+                        <!-- Cabeçalho da Aula e Ação -->
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <span class="badge bg-light text-secondary border mb-2">Aula {{ lesson.order }}</span>
+                                <h1 class="h3 fw-bold" style="color: var(--secondary-color);">{{ lesson.title }}</h1>
+                            </div>
+
+                            {% is_lesson_viewed user lesson as viewed %}
+                            <div class="ms-3">
+                                {% if viewed %}
+                                    <button class="btn btn-success btn-sm btn-check-lesson shadow-sm" disabled>
+                                        <i class="bi bi-check-circle-fill me-1"></i> Concluída
+                                    </button>
+                                {% else %}
+                                    <a href="{% url 'courses:mark_viewed' lesson.id %}" class="btn btn-outline-primary btn-sm btn-check-lesson">
+                                        <i class="bi bi-circle me-1"></i> Marcar como Visto
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Texto da Aula -->
+                        <div class="lesson-content">
+                            {{ lesson.content|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO DE MATERIAIS (Só aparece se tiver) -->
+                {% if lesson.materials.exists %}
+                <div class="card border-0 shadow-sm mb-5 overflow-hidden" style="border-radius: 12px;">
+                    <div class="card-header bg-white border-bottom py-3 px-4">
+                        <h6 class="mb-0 fw-bold" style="color: var(--secondary-color);">
+                            <i class="bi bi-paperclip me-2 text-warning"></i> Materiais de Apoio
+                        </h6>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        {% for material in lesson.materials.all %}
+                            <a href="{{ material.file.url }}" target="_blank"
+                               class="list-group-item list-group-item-action py-3 px-4 d-flex align-items-center gap-3 border-bottom-0">
+
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center"
+                                     style="width: 40px; height: 40px;">
+                                    {% if material.extension == 'pdf' %}
+                                        <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
+                                    {% elif material.extension in 'doc docx' %}
+                                        <i class="bi bi-file-earmark-word-fill text-primary"></i>
+                                    {% elif material.extension in 'zip rar' %}
+                                        <i class="bi bi-file-earmark-zip-fill text-warning"></i>
+                                    {% else %}
+                                        <i class="bi bi-file-earmark-arrow-down-fill text-secondary"></i>
+                                    {% endif %}
+                                </div>
+
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0 text-dark small fw-bold">{{ material.title }}</h6>
+                                    <small class="text-muted text-uppercase" style="font-size: 0.65rem;">
+                                        {{ material.extension }}
+                                    </small>
+                                </div>
+
+                                <span class="badge bg-light text-secondary border rounded-pill px-3">Baixar</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Navegação Rodapé -->
+                <div class="d-flex justify-content-between align-items-center py-4 border-top">
+                    <div>
+                        {% if previous_lesson %}
+                            <a href="{% url 'courses:lesson_detail' previous_lesson.id %}" class="btn btn-outline-secondary nav-btn d-flex align-items-center gap-2">
+                                <i class="bi bi-arrow-left"></i> Anterior
+                            </a>
+                        {% else %}
+                            <button class="btn btn-light text-muted nav-btn px-4" disabled>Início</button>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        {% if next_lesson %}
+                            <a href="{% url 'courses:lesson_detail' next_lesson.id %}" class="btn btn-next nav-btn d-flex align-items-center gap-2">
+                                Próxima Aula <i class="bi bi-arrow-right"></i>
+                            </a>
+                        {% else %}
+                            <a href="{% url 'assessments:take_quiz' lesson.module.id %}" class="btn btn-exam nav-btn d-flex align-items-center gap-2">
+                                <i class="bi bi-trophy-fill"></i> Avaliação Final
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- COLUNA DIREITA (Sidebar Sticky) -->
+            <div class="col-lg-4">
+                <div class="lesson-sidebar sticky-top" style="top: 100px;">
+
+                    <div class="lesson-sidebar-header">
+                        <small class="text-white-50 text-uppercase fw-bold ls-1" style="font-size: 0.7rem;">Módulo Atual</small>
+                        <h5 class="mb-0 fw-bold mt-1">{{ lesson.module.title }}</h5>
+
+                        <!-- Barra de Progresso Real -->
+                        {% course_progress user lesson.module.course as percent %}
+                        <div class="progress mt-3" style="height: 4px; background: rgba(255,255,255,0.2);">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ percent }}%"></div>
+                        </div>
+                        <div class="text-end mt-1">
+                            <small class="text-white-50" style="font-size: 0.7rem;">{{ percent }}% Concluído</small>
+                        </div>
+                    </div>
+
+                    <div class="list-group list-group-flush">
+                        {% for l in lesson.module.lessons.all %}
+                            <!-- Verifica se CADA aula foi vista -->
+                            {% is_lesson_viewed user l as l_viewed %}
+
+                            <a href="{% url 'courses:lesson_detail' l.id %}"
+                               class="list-group-item lesson-item d-flex align-items-center gap-3 {% if l.id == lesson.id %}active-lesson{% endif %}">
+
+                                <!-- Ícone Dinâmico -->
+                                <div style="width: 24px; text-align: center;">
+                                    {% if l.id == lesson.id %}
+                                        <i class="bi bi-play-circle-fill fs-5" style="color: var(--primary-color);"></i>
+                                    {% elif l_viewed %}
+                                        <i class="bi bi-check-circle-fill fs-5 text-success"></i>
+                                    {% else %}
+                                        <i class="bi bi-circle fs-5 text-muted opacity-25"></i>
+                                    {% endif %}
+                                </div>
+
+                                <div class="lh-sm">
+                                    <span class="d-block fw-medium">{{ l.title }}</span>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+
+                    <div class="p-3 bg-light text-center border-top">
+                         <a href="{% url 'courses:detail' lesson.module.course.id %}" class="text-decoration-none small fw-bold text-secondary">
+                            <i class="bi bi-grid-fill me-1"></i> Voltar para a Grade
+                         </a>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

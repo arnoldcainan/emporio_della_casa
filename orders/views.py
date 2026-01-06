@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib import messages
 from django.core.exceptions import ValidationError
 from .models import OrderItem, Order, ShippingRate
 from .forms import OrderCreateForm
@@ -189,3 +191,27 @@ def envios_prazos(request):
 def winehunters(request):
     """Exibe a página institucional sobre a curadoria de vinhos."""
     return render(request, 'pages/winehunters.html')
+
+
+from .forms import CustomUserCreationForm  # Importe o novo formulário
+
+
+def register(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            # 1. Salva o novo usuário no banco de dados
+            user = form.save()
+
+            # 2. Realiza o login automático do usuário recém-criado
+            # O Django autentica a sessão imediatamente
+            login(request, user)
+
+            messages.success(request, f'Bem-vindo, {user.first_name}! Sua conta foi criada e você já está logado.')
+
+            # 3. Redireciona para a página de cursos ou home (já logado)
+            return redirect('courses:my_courses')
+    else:
+        form = CustomUserCreationForm()
+
+    return render(request, 'registration/register.html', {'form': form})

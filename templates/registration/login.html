@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+
+                <div class="card-header text-white text-center py-4"
+                     style="background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));">
+                    <h3 class="fw-bold mb-0">Acesse sua Conta</h3>
+                    <p class="mb-0 opacity-75 small">Bem-vindo de volta ao Emporio Della Casa</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger d-flex align-items-center shadow-sm border-0" role="alert">
+                            <i class="bi bi-exclamation-circle-fill me-2 fs-5"></i>
+                            <div class="small lh-sm">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-secondary small text-uppercase">E-mail</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted">
+                                    <i class="bi bi-envelope-fill"></i> </span>
+                                {% render_field form.username class="form-control border-start-0 ps-0" placeholder="seu@email.com" %}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-secondary small text-uppercase">Senha</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted">
+                                    <i class="bi bi-lock-fill"></i>
+                                </span>
+                                {% render_field form.password class="form-control border-start-0 ps-0" placeholder="Sua senha secreta" %}
+                            </div>
+                        </div>
+                        <div class="text-end mb-3">
+                            <a href="{% url 'password_reset' %}" class="small text-decoration-none text-muted">Esqueceu a senha?</a>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-5">
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold rounded-pill shadow-sm">
+                                Entrar na Plataforma
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card-footer bg-light text-center py-3 border-0">
+                    <p class="mb-0 small text-muted">
+                        Ainda não tem conta?
+                        <a href="{% url 'register' %}" class="fw-bold text-decoration-none" style="color: var(--primary-color);">
+                            Cadastre-se gratuitamente
+                        </a>
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

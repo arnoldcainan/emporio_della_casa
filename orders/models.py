@@ -49,6 +49,16 @@ class Order(models.Model):
     utm_campaign = models.CharField(max_length=100, blank=True, null=True)
     shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
+    tracking_code = models.CharField('Código de Rastreio', max_length=100, blank=True, null=True)
+
+    # Status detalhado para o fluxo de entrega
+    STATUS_CHOICES = [
+        ('processing', 'Em Separação'),
+        ('shipped', 'Enviado / Em Trânsito'),
+        ('delivered', 'Entregue'),
+    ]
+    status = models.CharField('Status da Entrega', max_length=20, choices=STATUS_CHOICES, default='processing')
+
     coupon = models.ForeignKey(Coupon,
                                related_name='orders',
                                null=True,
@@ -86,7 +96,7 @@ class Order(models.Model):
                 days = rate.pac_days
 
             # A contagem começa a partir da última atualização (confirmação do Webhook)
-            return self.updated + timedelta(days=days)
+            return self.updated + timedelta(days=days) if self.paid else None
         except ShippingRate.DoesNotExist:
             return None
 

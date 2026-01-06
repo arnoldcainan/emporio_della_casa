@@ -16,16 +16,23 @@ class OrderItemInline(admin.TabularInline):
 class OrderAdmin(admin.ModelAdmin):
     # Colunas que aparecem na listagem principal
     list_display = [
-        'id', 'first_name', 'last_name', 'email',
-        'state', 'shipping_method','estimated_delivery_date', 'shipping_cost',
-        'paid', 'created'
+        'id',
+        'first_name',
+        'state',
+        'shipping_method',
+        'status',
+        'tracking_code',
+        'estimated_delivery_date',
+        'paid',
+        'created'
     ]
+    list_editable = ['status', 'tracking_code']
 
     # Filtros laterais para facilitar a gestão
-    list_filter = ['paid', 'shipping_method', 'state', 'created', 'updated']
+    list_filter = ['status', 'paid', 'state', 'created']
 
     # Busca rápida por nome, email ou ID do pedido
-    search_fields = ['first_name', 'last_name', 'email', 'id']
+    search_fields = ['first_name', 'email', 'id']
 
     # Itens do pedido aparecem dentro da página do pedido
     inlines = [OrderItemInline]

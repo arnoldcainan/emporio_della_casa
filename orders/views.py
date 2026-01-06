@@ -29,7 +29,10 @@ def order_create(request):
             coupon_id = request.session.get('coupon_id')
             if coupon_id:
                 try:
-                    coupon = Coupon.objects.get(id=coupon_id, active=True)
+                    # Validamos data e atividade novamente antes de salvar o pedido
+                    coupon = Coupon.objects.get(id=coupon_id, active=True,
+                                                valid_from__lte=timezone.now(),
+                                                valid_to__gte=timezone.now())
                     order.coupon = coupon
                     order.discount = coupon.discount
                     coupon.usage_count += 1
@@ -37,6 +40,7 @@ def order_create(request):
                 except Coupon.DoesNotExist:
                     order.coupon = None
                     order.discount = 0
+                    request.session['coupon_id'] = None  # Limpa cupom inválido
 
             # 2. LOGICA DE FRETE (Lendo o novo campo state)
             state_uf = form.cleaned_data.get('state').strip().upper()  # Pega a UF vinda do BuscaCEP
@@ -134,33 +138,44 @@ def asaas_webhook(request):
     return HttpResponse(status=400)
 
 
+# No seu arquivo orders/views.py
 def track_orders(request):
     email = request.GET.get('email')
     orders = None
 
     if email:
-        # Buscamos os pedidos filtrando pelo email e usamos prefetch_related
-        # para carregar os vinhos de uma vez só e deixar a página rápida.
-        orders = Order.objects.filter(email=email).prefetch_related('items__product').order_by('-created')
+        # Normaliza o e-mail da busca para minúsculo
+        email_normalized = email.lower().strip()
+
+        # Busca no banco usando o e-mail normalizado
+        orders = Order.objects.filter(
+            email__iexact=email_normalized  # __iexact ignora maiúsculas/minúsculas no banco
+        ).prefetch_related('items__product').order_by('-created')
 
     return render(request, 'orders/track.html', {
         'orders': orders,
         'email': email
     })
 
+
 def apply_coupon(request):
     now = timezone.now()
-    code = request.POST.get('coupon_code')
+    # Adicionamos .strip() para remover espaços acidentais
+    code = request.POST.get('coupon_code', '').strip()
+
+    if not code:
+        return JsonResponse({'success': False, 'message': 'Digite um código'})
+
     try:
+        # O __iexact já resolve a questão de Maiúsculas/Minúsculas
         coupon = Coupon.objects.get(code__iexact=code,
-                                  valid_from__lte=now,
-                                  valid_to__gte=now,
-                                  active=True)
+                                    valid_from__lte=now,
+                                    valid_to__gte=now,
+                                    active=True)
         request.session['coupon_id'] = coupon.id
         return JsonResponse({'success': True, 'discount': coupon.discount})
     except Coupon.DoesNotExist:
-        return JsonResponse({'success': False, 'message': 'Cupom inválido'})
-
+        return JsonResponse({'success': False, 'message': 'Cupom inválido ou expirado'})
 
 def fale_conosco(request):
     return render(request, 'pages/fale_conosco.html')

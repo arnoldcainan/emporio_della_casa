@@ -19,6 +19,12 @@ class OrderCreateForm(forms.ModelForm):
 
         }
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email:
+            return email.lower().strip()  # Converte para minúsculo e remove espaços extras
+        return email
+
     def clean_phone(self):
         phone = self.cleaned_data.get('phone')
         # Remove parênteses, espaços e traços para contar apenas os números

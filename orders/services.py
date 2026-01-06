@@ -1,11 +1,14 @@
-from decimal import Decimal
+from .models import ShippingRate
+from django.core.exceptions import ValidationError
 
-
-# orders/services.py ou onde estiver sua lógica de frete
-def calculate_shipping(city):
-    # Exemplo de lógica para teste
-    if not city:
+def calculate_shipping(state_uf):
+    if not state_uf:
         return 0
-    if "São Paulo" in city:
-        return 15.00
-    return 30.00
+    try:
+        # Busca a UF enviada pelo BuscaCEP (ex: 'SP')
+        rate = ShippingRate.objects.get(state__iexact=state_uf)
+        # Retorna o custo da transportadora ou PAC
+        return rate.delivery_cost
+    except ShippingRate.DoesNotExist:
+        # Lança erro para estados não cadastrados na sua planilha
+        raise ValidationError(f"Infelizmente não temos logística para {state_uf} ainda.")

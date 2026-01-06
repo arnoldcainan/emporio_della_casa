@@ -1,18 +1,43 @@
 from django.db import models
+from django.core.validators import MinLengthValidator
 from products.models import Product
 from decimal import Decimal
 from coupons.models import Coupon
 
 
 class Order(models.Model):
-    # Dados do Cliente (simplificado para agora, depois vincularemos ao User)
+    SHIPPING_CHOICES = [
+        ('pac', 'PAC'),
+        ('sedex', 'SEDEX'),
+        ('delivery', 'Transportadora'),
+    ]
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     email = models.EmailField()
-    phone = models.CharField(max_length=20, blank=True)
+    # O formato (00) 00000-0000 possui 15 caracteres
+    phone = models.CharField(
+        'WhatsApp',
+        max_length=20,
+        validators=[MinLengthValidator(15, message="O número de WhatsApp está incompleto.")]
+    )
     address = models.CharField(max_length=250)
-    postal_code = models.CharField(max_length=20)
-    city = models.CharField(max_length=100)
+    postal_code = models.CharField(
+        'CEP',
+        max_length=20,
+        validators=[MinLengthValidator(8, message="O CEP deve conter 8 dígitos.")]
+    )
+
+    city = models.CharField('Cidade', max_length=100)
+    state = models.CharField('UF', max_length=2)
+
+    shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    shipping_method = models.CharField(
+        'Método de Envio',
+        max_length=20,
+        choices=SHIPPING_CHOICES,
+        default='pac'
+    )
+
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     paid = models.BooleanField(default=False)
@@ -61,3 +86,26 @@ class OrderDashboard(Order):
         proxy = True
         verbose_name = 'Dashboard de Vendas'
         verbose_name_plural = 'Dashboard de Vendas'
+
+
+class ShippingRate(models.Model):
+    state = models.CharField('Estado (UF)', max_length=2, unique=True)
+
+    # PAC
+    pac_cost = models.DecimalField('Custo PAC', max_digits=10, decimal_places=2)
+    pac_days = models.PositiveIntegerField('Prazo PAC (dias)')
+
+    # SEDEX
+    sedex_cost = models.DecimalField('Custo SEDEX', max_digits=10, decimal_places=2)
+    sedex_days = models.PositiveIntegerField('Prazo SEDEX (dias)')
+
+    # Transportadora
+    delivery_cost = models.DecimalField('Custo Transportadora', max_digits=10, decimal_places=2)
+    delivery_days = models.PositiveIntegerField('Prazo Transportadora (dias)')
+
+    def __str__(self):
+        return f"Fretes para {self.state}"
+
+    class Meta:
+        verbose_name = 'Tabela de Frete'
+        verbose_name_plural = 'Tabelas de Fretes'

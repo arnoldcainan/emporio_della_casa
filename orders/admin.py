@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Order, OrderItem,OrderDashboard
+from .models import Order, OrderItem,OrderDashboard, ShippingRate
 
 from django.db.models import Sum, Avg, Count
 from django.utils import timezone
@@ -14,31 +14,34 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    # Colunas que aparecerão na lista principal
-    list_display = ['id', 'first_name', 'city', 'shipping_cost', 'get_total_cost', 'paid', 'created']
+    # Colunas que aparecem na listagem principal
+    list_display = [
+        'id', 'first_name', 'last_name', 'email',
+        'state', 'shipping_method', 'shipping_cost',
+        'paid', 'created'
+    ]
 
     # Filtros laterais para facilitar a gestão
-    list_filter = ['paid', 'created', 'updated', 'utm_source']
+    list_filter = ['paid', 'shipping_method', 'state', 'created', 'updated']
+
+    # Busca rápida por nome, email ou ID do pedido
+    search_fields = ['first_name', 'last_name', 'email', 'id']
 
     # Itens do pedido aparecem dentro da página do pedido
     inlines = [OrderItemInline]
 
-    # Organização dos campos no formulário de edição
+    # Organização dos campos ao abrir o pedido (Fieldsets)
     fieldsets = (
         ('Informações do Cliente', {
-            'fields': ('first_name', 'last_name', 'email', 'address', 'postal_code', 'city')
+            'fields': ('first_name', 'last_name', 'email', 'phone')
         }),
-        ('Financeiro', {
-            'fields': ('shipping_cost', 'paid')  # <-- Inclua shipping_cost aqui
+        ('Endereço de Entrega', {
+            'fields': ('postal_code', 'address', 'city', 'state')
         }),
-        ('Rastreamento de Marketing (UTM)', {
-            'fields': ('utm_source', 'utm_medium', 'utm_campaign'),
+        ('Logística e Pagamento', {
+            'fields': ('shipping_method', 'shipping_cost', 'paid', 'coupon', 'discount')
         }),
     )
-
-    def get_total_cost(self, obj):
-        return f"R$ {obj.get_total_cost()}"
-    get_total_cost.short_description = 'Total (c/ Frete)'
 
 
 @admin.register(OrderDashboard)
@@ -73,3 +76,10 @@ class OrderDashboardAdmin(admin.ModelAdmin):
             'title': 'Relatório de Vendas (30 dias)'
         })
         return super().changelist_view(request, extra_context=extra_context)
+
+
+@admin.register(ShippingRate)
+class ShippingRateAdmin(admin.ModelAdmin):
+    list_display = ['state', 'pac_cost', 'sedex_cost', 'delivery_cost']
+    list_editable = ['pac_cost', 'sedex_cost', 'delivery_cost']
+    search_fields = ['state']

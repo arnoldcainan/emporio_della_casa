@@ -5,197 +5,310 @@
         <div class="col-lg-7">
             <h2 class="fw-bold mb-4" style="color: var(--burgundy);">Finalizar Seleção</h2>
             <div class="card border-0 shadow-lg p-4 rounded-5 glass-card">
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger rounded-4 shadow-sm mb-4">
+                        {% for error in form.non_field_errors %}
+                            <i class="bi bi-exclamation-circle-fill me-2"></i> {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
                 <form method="post" id="checkout-form" class="row g-3">
                     {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="col-12">
+                            <div class="alert alert-danger rounded-4 shadow-sm">
+                                {% for error in form.non_field_errors %}
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ error }}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
                     <div class="col-md-6">
                         <label class="form-label small fw-bold text-muted text-uppercase">Nome</label>
                         {{ form.first_name }}
+                        {% if form.first_name.errors %}<div class="text-danger small mt-1 fw-bold">{{ form.first_name.errors.0 }}</div>{% endif %}
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small fw-bold text-muted text-uppercase">Sobrenome</label>
                         {{ form.last_name }}
+                        {% if form.last_name.errors %}<div class="text-danger small mt-1 fw-bold">{{ form.last_name.errors.0 }}</div>{% endif %}
                     </div>
+
                     <div class="col-md-7">
                         <label class="form-label small fw-bold text-muted text-uppercase">E-mail</label>
                         {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1 fw-bold">
+                                <i class="bi bi-exclamation-circle"></i> {{ form.email.errors.0 }}
+                            </div>
+                        {% endif %}
                     </div>
                     <div class="col-md-5">
-                        <label class="form-label small fw-bold text-muted text-uppercase">WhatsApp / Celular</label>
-                        <input type="text" name="phone" id="id_phone" class="form-control" placeholder="(00) 00000-0000" required>
+                        <label class="form-label small fw-bold text-muted text-uppercase">WhatsApp</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}
+                            <div class="text-danger small mt-1 fw-bold">
+                                <i class="bi bi-exclamation-circle"></i> {{ form.phone.errors.0 }}
+                            </div>
+                        {% endif %}
                     </div>
 
-                    <div class="col-md-4 mt-4">
+                    <div class="col-md-4">
                         <label class="form-label small fw-bold text-muted text-uppercase">CEP</label>
-                        <div class="input-group">
-                            {{ form.postal_code }}
-                            <span class="input-group-text bg-white border-start-0" id="cep-spinner" style="display:none;">
-                                <div class="spinner-border spinner-border-sm text-burgundy" role="status"></div>
-                            </span>
-                        </div>
+                        {{ form.postal_code }}
+                        {% if form.postal_code.errors %}<div class="text-danger small mt-1 fw-bold">{{ form.postal_code.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Endereço e Bairro</label>
+                        {{ form.address }}
+                        {% if form.address.errors %}<div class="text-danger small mt-1 fw-bold">{{ form.address.errors.0 }}</div>{% endif %}
                     </div>
 
-                    <div class="col-md-8 mt-4">
-                        <label class="form-label small fw-bold text-muted text-uppercase">Logradouro (Rua/Av)</label>
-                        <input type="text" name="address" id="id_address" class="form-control bg-light" readonly placeholder="Preenchido pelo CEP">
-                    </div>
-
-                    <div class="col-md-6">
+                    <div class="col-md-8">
                         <label class="form-label small fw-bold text-muted text-uppercase">Cidade</label>
-                        <input type="text" name="city" id="id_city" class="form-control bg-light" readonly>
+                        {{ form.city }}
+                        {% if form.city.errors %}<div class="text-danger small mt-1 fw-bold">{{ form.city.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase">UF</label>
+                        {{ form.state }}
+                        {% if form.state.errors %}<div class="text-danger small mt-1 fw-bold">{{ form.state.errors.0 }}</div>{% endif %}
                     </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold text-muted text-uppercase">Número / Compl.</label>
-                        <input type="text" name="address_number" id="id_number" class="form-control" placeholder="Ex: 123, Ap 42" required>
+                    <div id="shipping-options-container" class="col-12 mt-4" style="display: none;">
+                        <label class="form-label small fw-bold text-muted text-uppercase mb-3">Escolha como quer receber</label>
+                        <div class="row g-3" id="shipping-methods-list">
+                            </div>
+                        <input type="hidden" name="shipping_method" id="selected-shipping-method" value="">
                     </div>
 
-                    <div class="col-12 mt-4">
-                        <button type="submit" class="btn btn-burgundy btn-lg w-100 py-3 fw-bold shadow">
+                    <div class="col-12 mt-5">
+                        <button type="submit" id="btn-finalizar" class="btn btn-burgundy btn-lg w-100 py-3 fw-bold shadow rounded-4 transition-all">
                             Finalizar e Escolher Forma de Pagamento <i class="bi bi-credit-card-2-back ms-2"></i>
                         </button>
-                        <div class="text-center mt-3">
-                            <img src="https://img.icons8.com/color/48/000000/visa.png" width="30">
-                            <img src="https://img.icons8.com/color/48/000000/mastercard.png" width="30">
-                            <img src="https://img.icons8.com/color/48/000000/pix.png" width="30">
-                            <p class="small text-muted mt-2">Pagamento seguro via Asaas</p>
-                        </div>
                     </div>
                 </form>
             </div>
         </div>
 
         <div class="col-lg-5">
-            <h2 class="fw-bold mb-4" style="color: var(--burgundy);">Resumo</h2>
-            <div class="card border-0 shadow-lg p-4 rounded-5 bg-white sticky-top" style="top: 100px;">
-                {% for item in cart %}
-                <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
-                    <span>{{ item.quantity }}x {{ item.product.name }}</span>
-                    <span class="fw-bold">R$ {{ item.total_price }}</span>
-                </div>
-                {% endfor %}
-
-                <div class="d-flex justify-content-between mt-3">
-                    <span class="text-muted small text-uppercase">Subtotal</span>
-                    <span class="fw-bold text-dark" id="display-subtotal">R$ {{ cart.get_total_price }}</span>
-                </div>
-
-                <div class="d-flex justify-content-between mb-2 mt-2">
-                    <span class="text-muted small text-uppercase">Frete</span>
-                    <span id="shipping-value" class="fw-bold text-success">R$ 0,00</span>
-                </div>
-
-                <div class="mt-3 p-3 rounded-4 bg-light border-dashed mb-3">
-                    <label class="small fw-bold text-muted text-uppercase mb-2 d-block">Possui um Cupom?</label>
-                    <div class="input-group">
-                        <input type="text" id="coupon-input" class="form-control form-control-sm border-0 shadow-none" placeholder="Ex: VINHO10" style="background: transparent;">
-                        <button class="btn btn-dark btn-sm px-3" type="button" id="apply-coupon-btn">Aplicar</button>
+            <div class="sticky-top" style="top: 100px;">
+                <h4 class="fw-bold mb-4">Resumo do Pedido</h4>
+                <div class="card border-0 shadow-sm p-4 rounded-5 bg-white mb-4">
+                    <div class="d-flex justify-content-between mb-3 text-muted">
+                        <span>Subtotal</span>
+                        <span class="fw-bold text-dark">R$ {{ cart.get_total_price }}</span>
                     </div>
-                    <div id="coupon-message" class="small mt-2 fw-bold" style="display:none;"></div>
+                    <div class="d-flex justify-content-between mb-3 text-muted">
+                        <span>Frete</span>
+                        <span class="fw-bold" id="shipping-value" style="color: var(--burgundy);">Aguardando CEP...</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3 text-success" id="discount-row" style="display: none !important;">
+                        <span>Desconto</span>
+                        <span class="fw-bold">- R$ <span id="discount-value">0,00</span></span>
+                    </div>
+                    <hr class="my-4 opacity-10">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="h5 fw-bold mb-0">Total</span>
+                        <span class="h3 fw-bold mb-0" id="total-value" style="color: var(--burgundy);">R$ {{ cart.get_total_price }}</span>
+                    </div>
                 </div>
 
-                <hr class="my-3">
-
-                <div class="h3 fw-bold text-burgundy d-flex justify-content-between mb-0">
-                    <span>Total</span>
-                    <span id="total-value">R$ {{ cart.get_total_price }}</span>
+                <div class="card border-0 shadow-sm p-3 rounded-4 bg-light">
+                    <div class="input-group">
+                        <input type="text" id="coupon-input" class="form-control border-0 bg-white" placeholder="Código do Cupom">
+                        <button class="btn btn-outline-dark border-0 fw-bold px-3" type="button" id="apply-coupon-btn">Aplicar</button>
+                    </div>
+                    <div id="coupon-message" class="small mt-2" style="display: none;"></div>
                 </div>
-                <small class="text-muted">Total inclui frete e descontos.</small>
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    .border-dashed { border: 2px dashed #dee2e6; }
-    .glass-card { background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(15px); }
-    .text-burgundy { color: #4A0404; }
+    .shipping-card { cursor: pointer; transition: all 0.3s ease; border: 2px solid #eee; }
+    .shipping-card:hover { border-color: var(--burgundy); transform: translateY(-3px); }
+    .shipping-card.active { border-color: var(--burgundy); background-color: rgba(128, 0, 32, 0.05); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    .text-burgundy { color: #800020; }
+    .btn-burgundy { background-color: #800020; color: white; }
+    .btn-burgundy:hover { background-color: #600018; color: white; }
 </style>
 
-<script src="https://unpkg.com/imask"></script>
 <script>
-// 1. MÁSCARAS
-const phoneMask = IMask(document.getElementById('id_phone'), { mask: '(00) 00000-0000' });
-const cepElement = document.getElementById('id_postal_code');
-const cepMask = IMask(cepElement, { mask: '00000-000' });
+    // 1. INICIALIZAÇÃO DE VALORES
+    // Tratamento robusto para garantir que o subtotal seja um número decimal válido
+    let cartSubtotal = parseFloat("{{ cart.get_total_price }}".replace('.', '').replace(',', '.'));
+    let currentShipping = 0;
+    let currentDiscountPercent = 0;
 
-// 2. VARIÁVEIS DE CÁLCULO (Correção da vírgula para ponto)
-let cartSubtotal = parseFloat("{{ cart.get_total_price }}".replace('.', '').replace(',', '.'));
-let currentShipping = 0;
-let currentDiscountPercent = 0;
+    const btnFinalizar = document.getElementById('btn-finalizar');
+    const cepInput = document.querySelector('input[name="postal_code"]');
+    const shippingContainer = document.getElementById('shipping-options-container');
+    const shippingList = document.getElementById('shipping-methods-list');
+    const shippingValueDisplay = document.getElementById('shipping-value');
 
-function updateUIDisplay() {
-    const discountAmount = cartSubtotal * (currentDiscountPercent / 100);
-    const finalTotal = (cartSubtotal - discountAmount) + currentShipping;
+    // 2. MÁSCARA DE TELEFONE (Corrigida para garantir 11 dígitos e formato correto)
+    const phoneInput = document.querySelector('input[name="phone"]');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.slice(0, 11);
 
-    document.getElementById('total-value').innerText =
-        `R$ ${finalTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-}
+            let formattedValue = '';
+            if (value.length > 0) {
+                formattedValue = '(' + value.slice(0, 2);
+                if (value.length > 2) {
+                    formattedValue += ') ' + value.slice(2, 7);
+                    if (value.length > 7) {
+                        formattedValue += '-' + value.slice(7, 11);
+                    }
+                }
+            }
+            e.target.value = formattedValue;
+        });
+    }
 
-// 3. LÓGICA DE CEP E FRETE
-cepElement.addEventListener('blur', function() {
-    const cep = this.value.replace(/\D/g, '');
-    if (cep.length === 8) {
-        document.getElementById('cep-spinner').style.display = 'block';
-        fetch(`https://viacep.com.br/ws/${cep}/json/`)
+    // 3. ATUALIZAÇÃO DA INTERFACE (Total, Subtotal e Descontos)
+    function updateUIDisplay() {
+        const discountAmount = cartSubtotal * (currentDiscountPercent / 100);
+        const finalTotal = (cartSubtotal - discountAmount) + currentShipping;
+
+        const discountRow = document.getElementById('discount-row');
+        if (currentDiscountPercent > 0 && discountRow) {
+            discountRow.style.setProperty('display', 'flex', 'important');
+            document.getElementById('discount-value').innerText = discountAmount.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        }
+
+        document.getElementById('total-value').innerText =
+            `R$ ${finalTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+    }
+
+    // 4. SELEÇÃO DE MÉTODO DE FRETE
+    function selectShipping(methodId, cost, element) {
+        document.querySelectorAll('.shipping-card').forEach(c => c.classList.remove('active'));
+        if(element) element.classList.add('active');
+
+        currentShipping = parseFloat(cost);
+        document.getElementById('selected-shipping-method').value = methodId;
+        shippingValueDisplay.innerText = `R$ ${currentShipping.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        updateUIDisplay();
+    }
+
+    // 5. TRAVA DE SEGURANÇA (Bloqueia o botão ao digitar novo CEP para evitar erro de sincronia)
+    cepInput.addEventListener('input', function(e) {
+        // 1. Remove tudo que não for número
+        let value = e.target.value.replace(/\D/g, '');
+
+        // 2. Limita visualmente a 8 caracteres
+        if (value.length > 8) {
+            value = value.slice(0, 8);
+        }
+        e.target.value = value;
+
+        // Lógica de trava de segurança que já existia
+        btnFinalizar.disabled = true;
+        btnFinalizar.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Calculando frete...';
+        shippingContainer.style.display = 'none';
+        shippingValueDisplay.innerText = 'Calculando...';
+    });
+
+    // 6. BUSCA CEP E CÁLCULO DE FRETE
+    cepInput.addEventListener('blur', function() {
+        const cep = this.value.replace(/\D/g, '');
+
+        if (cep.length === 8) {
+            fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.erro) {
+                        // Preenchimento automático dos campos
+                        document.querySelector('input[name="address"]').value = `${data.logradouro}, ${data.bairro}`;
+                        document.querySelector('input[name="city"]').value = data.localidade;
+                        document.querySelector('input[name="state"]').value = data.uf;
+
+                        // Busca Opções de Frete baseadas na UF retornada
+                        fetch(`/orders/get-shipping-quote/?city=${data.uf}`)
+                            .then(res => res.json())
+                            .then(shipData => {
+                                if(shipData.success) {
+                                    shippingContainer.style.display = 'block';
+                                    shippingList.innerHTML = '';
+
+                                    shipData.options.forEach((opt, index) => {
+                                        const card = `
+                                            <div class="col-md-4">
+                                                <div class="card h-100 shipping-card p-3 text-center rounded-4 shadow-sm"
+                                                     onclick="selectShipping('${opt.id}', ${opt.cost}, this)">
+                                                    <div class="fw-bold text-burgundy">${opt.name}</div>
+                                                    <div class="small text-muted">${opt.days} dias</div>
+                                                    <div class="fw-bold mt-2">R$ ${opt.cost.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                                                </div>
+                                            </div>`;
+                                        shippingList.innerHTML += card;
+
+                                        // Auto-seleciona a primeira opção (PAC)
+                                        if(index === 0) {
+                                            setTimeout(() => {
+                                                const firstCard = shippingList.querySelector('.shipping-card');
+                                                selectShipping(opt.id, opt.cost, firstCard);
+                                            }, 50);
+                                        }
+                                    });
+
+                                    // Libera o botão de finalizar
+                                    btnFinalizar.disabled = false;
+                                    btnFinalizar.innerHTML = 'Finalizar e Escolher Forma de Pagamento <i class="bi bi-credit-card-2-back ms-2"></i>';
+                                } else {
+                                    shippingContainer.style.display = 'none';
+                                    btnFinalizar.disabled = true;
+                                    btnFinalizar.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Região não atendida';
+                                    alert(shipData.message);
+                                }
+                            });
+                    } else {
+                        alert("CEP não encontrado.");
+                        btnFinalizar.disabled = true;
+                        btnFinalizar.innerText = 'CEP Inválido';
+                    }
+                });
+        }
+    });
+
+    // 7. LÓGICA DE CUPOM
+    const applyCouponBtn = document.getElementById('apply-coupon-btn');
+    if (applyCouponBtn) {
+        applyCouponBtn.addEventListener('click', function() {
+            const code = document.getElementById('coupon-input').value;
+            const messageEl = document.getElementById('coupon-message');
+            if(!code) return;
+
+            fetch("{% url 'orders:apply_coupon' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `coupon_code=${encodeURIComponent(code)}`
+            })
             .then(res => res.json())
             .then(data => {
-                if (!data.erro) {
-                    document.getElementById('id_address').value = `${data.logradouro}, ${data.bairro}`;
-                    document.getElementById('id_city').value = data.localidade;
-                    document.getElementById('id_number').focus();
-
-                    fetch(`/orders/get-shipping-quote/?city=${encodeURIComponent(data.localidade)}`)
-                        .then(res => res.json())
-                        .then(shippingData => {
-                            currentShipping = parseFloat(shippingData.shipping_cost);
-                            document.getElementById('shipping-value').innerText =
-                                `R$ ${currentShipping.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-                            updateUIDisplay();
-                        });
+                messageEl.style.display = 'block';
+                if (data.success) {
+                    currentDiscountPercent = parseFloat(data.discount);
+                    messageEl.className = "small mt-2 text-success";
+                    messageEl.innerText = `✅ Cupom de ${data.discount}% aplicado!`;
+                    updateUIDisplay();
+                } else {
+                    messageEl.className = "small mt-2 text-danger";
+                    messageEl.innerText = `❌ ${data.message}`;
                 }
-            })
-            .finally(() => { document.getElementById('cep-spinner').style.display = 'none'; });
+            });
+        });
     }
-});
-
-// 4. LÓGICA DE CUPOM
-document.getElementById('apply-coupon-btn').addEventListener('click', function() {
-    const code = document.getElementById('coupon-input').value;
-    const messageEl = document.getElementById('coupon-message');
-    const btn = this;
-
-    if(!code) return;
-    btn.disabled = true;
-
-    // ATENÇÃO: Verifique se sua URL no urls.py é exatamente '/coupons/apply/'
-    fetch("{% url 'coupons:apply' %}", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
-        body: `coupon_code=${encodeURIComponent(code)}`
-    })
-    .then(res => res.json())
-    .then(data => {
-        messageEl.style.display = 'block';
-        if (data.success) {
-            currentDiscountPercent = parseFloat(data.discount);
-            messageEl.className = "small mt-2 text-success";
-            messageEl.innerText = `✅ Cupom de ${data.discount}% aplicado!`;
-            updateUIDisplay();
-        } else {
-            currentDiscountPercent = 0;
-            messageEl.className = "small mt-2 text-danger";
-            messageEl.innerText = `❌ ${data.message}`;
-            updateUIDisplay();
-        }
-    })
-    .catch(err => {
-        messageEl.innerText = "Erro ao processar cupom.";
-        messageEl.style.display = 'block';
-    })
-    .finally(() => { btn.disabled = false; });
-});
 </script>
 {% endblock %}

@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
-from .models import OrderItem, Order
+from django.core.exceptions import ValidationError
+from .models import OrderItem, Order, ShippingRate
 from .forms import OrderCreateForm
 from products.cart import Cart
 from .services import calculate_shipping
@@ -24,30 +25,45 @@ def order_create(request):
         if form.is_valid():
             order = form.save(commit=False)
 
-            # 1. LOGICA DE CUPOM (Tracking)
+            # 1. LOGICA DE CUPOM (Mantida)
             coupon_id = request.session.get('coupon_id')
             if coupon_id:
                 try:
                     coupon = Coupon.objects.get(id=coupon_id, active=True)
                     order.coupon = coupon
                     order.discount = coupon.discount
-
-                    # Incrementa o contador de uso do cupom
                     coupon.usage_count += 1
                     coupon.save()
                 except Coupon.DoesNotExist:
-                    # Se o cupom sumiu ou foi desativado, o pedido segue sem ele
                     order.coupon = None
                     order.discount = 0
 
-            # 2. LOGICA DE FRETE
-            city = form.cleaned_data.get('city')
-            order.shipping_cost = calculate_shipping(city)
+            # 2. LOGICA DE FRETE (Lendo o novo campo state)
+            state_uf = form.cleaned_data.get('state').strip().upper()  # Pega a UF vinda do BuscaCEP
+            selected_method = request.POST.get('shipping_method')  # 'pac', 'sedex' ou 'delivery'
 
-            # Salva o pedido inicial para gerar o ID
-            order.save()
+            try:
+                from .models import ShippingRate
+                rate = ShippingRate.objects.get(state__iexact=state_uf)
+                # Salva o identificador do método para o seu controle logístico
+                order.shipping_method = selected_method
 
-            # 3. SALVA OS ITENS DO CARRINHO
+                if selected_method == 'sedex':
+                    order.shipping_cost = rate.sedex_cost
+                elif selected_method == 'delivery':
+                    order.shipping_cost = rate.delivery_cost
+                else:
+                    order.shipping_cost = rate.pac_cost
+                    order.shipping_method = 'pac'
+
+            except ShippingRate.DoesNotExist:
+                form.add_error('state', f"Logística indisponível para {state_uf}.")
+                return render(request, 'orders/create.html', {'cart': cart, 'form': form})
+
+            # Salva o estado no pedido também
+            order.state = state_uf
+            order.save()  # Agora salva tudo
+
             for item in cart:
                 OrderItem.objects.create(
                     order=order,
@@ -56,32 +72,42 @@ def order_create(request):
                     quantity=item['quantity']
                 )
 
-            # 4. INTEGRAÇÃO ASAAS (Pagamento via Link)
+            # 4. PAGAMENTO ASAAS
             gateway = AsaasGateway()
-            # O billing_type='UNDEFINED' permite que o Asaas mostre Pix, Cartão e Boleto
             payment_response = gateway.create_payment(order, billing_type='UNDEFINED')
             payment_url = payment_response.get('invoiceUrl')
 
-            # 5. LIMPEZA E FINALIZAÇÃO
             cart.clear()
-            request.session['coupon_id'] = None  # Limpa o cupom da sessão
+            request.session['coupon_id'] = None
 
-            # Renderiza a página intermediária de "Redirecionamento Seguro"
             return render(request, 'orders/created.html', {
                 'order': order,
                 'payment_url': payment_url
             })
+        else:
+            # DEBUG: Se o código chegar aqui, imprima os erros no terminal do seu PC
+            print(f"ERROS DO FORMULÁRIO: {form.errors}")
 
-    # Caso seja GET ou formulário inválido
     return render(request, 'orders/create.html', {'cart': cart, 'form': form})
 
+
 def get_shipping_quote(request):
-    city = request.GET.get('city', '')
-    shipping_cost = calculate_shipping(city)
-    # Retornar como string evita problemas de precisão no JSON
-    return JsonResponse({
-        'shipping_cost': "{:.2f}".format(shipping_cost),
-    })
+    state_uf = request.GET.get('city', '').strip().upper()
+    try:
+        from .models import ShippingRate
+        rate = ShippingRate.objects.get(state__iexact=state_uf)
+
+        return JsonResponse({
+            'success': True,
+            'options': [
+                {'id': 'pac', 'name': 'PAC', 'cost': float(rate.pac_cost), 'days': rate.pac_days},
+                {'id': 'sedex', 'name': 'SEDEX', 'cost': float(rate.sedex_cost), 'days': rate.sedex_days},
+                {'id': 'delivery', 'name': 'Transportadora', 'cost': float(rate.delivery_cost),
+                 'days': rate.delivery_days},
+            ]
+        })
+    except ShippingRate.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Região não atendida.'})
 
 @csrf_exempt
 def asaas_webhook(request):

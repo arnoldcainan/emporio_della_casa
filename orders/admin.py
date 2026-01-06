@@ -17,7 +17,7 @@ class OrderAdmin(admin.ModelAdmin):
     # Colunas que aparecem na listagem principal
     list_display = [
         'id', 'first_name', 'last_name', 'email',
-        'state', 'shipping_method', 'shipping_cost',
+        'state', 'shipping_method','estimated_delivery_date', 'shipping_cost',
         'paid', 'created'
     ]
 

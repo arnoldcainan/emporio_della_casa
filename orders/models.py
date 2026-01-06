@@ -3,6 +3,7 @@ from django.core.validators import MinLengthValidator
 from products.models import Product
 from decimal import Decimal
 from coupons.models import Coupon
+from datetime import timedelta
 
 
 class Order(models.Model):
@@ -66,6 +67,28 @@ class Order(models.Model):
         # Aplica o desconto se houver
         discount_amount = total_items * (Decimal(self.discount) / Decimal(100))
         return (total_items - discount_amount) + Decimal(self.shipping_cost)
+
+    @property
+    def estimated_delivery_date(self):
+        """Calcula a entrega somente se o pedido estiver pago"""
+        if not self.paid:
+            return None  # Não exibe data se não houver confirmação de pagamento
+
+        try:
+            rate = ShippingRate.objects.get(state__iexact=self.state)
+
+            days = 0
+            if self.shipping_method == 'sedex':
+                days = rate.sedex_days
+            elif self.shipping_method == 'delivery':
+                days = rate.delivery_days
+            else:
+                days = rate.pac_days
+
+            # A contagem começa a partir da última atualização (confirmação do Webhook)
+            return self.updated + timedelta(days=days)
+        except ShippingRate.DoesNotExist:
+            return None
 
 
 class OrderItem(models.Model):

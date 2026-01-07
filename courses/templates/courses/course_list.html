@@ -38,8 +38,8 @@
                             <span class="fs-4 fw-bold text-burgundy">R$ {{ course.price }}</span>
                             <div class="d-flex gap-2">
                                 <a href="{% url 'courses:detail' course.id %}" class="btn btn-outline-secondary rounded-pill flex-grow-1">Detalhes</a>
-                                <a href="{% url 'courses:add_to_cart' course.id %}" class="btn btn-burgundy rounded-pill flex-grow-1 shadow-sm">
-                                    <i class="bi bi-cart-plus me-1"></i> Comprar
+                                <a href="{% url 'courses:buy_now' course.id %}" class="btn btn-burgundy rounded-pill w-100 shadow-sm">
+                                    {% if course.price <= 0 %}Inscrever-se Grátis{% else %}Comprar Agora{% endif %}
                                 </a>
                             </div>
                         {% endif %}

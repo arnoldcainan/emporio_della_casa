@@ -4,6 +4,7 @@ from products.models import Product
 from decimal import Decimal
 from coupons.models import Coupon
 from datetime import timedelta
+from courses.models import Course
 
 
 class Order(models.Model):
@@ -19,8 +20,10 @@ class Order(models.Model):
     phone = models.CharField(
         'WhatsApp',
         max_length=20,
-        validators=[MinLengthValidator(15, message="O número de WhatsApp está incompleto.")]
+        # Altere para 11 para aceitar números sem formatação ou remova o validador
+        validators=[MinLengthValidator(11, message="O número de WhatsApp está incompleto.")]
     )
+
     address = models.CharField(max_length=250)
     postal_code = models.CharField(
         'CEP',
@@ -103,12 +106,29 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, related_name='order_items', on_delete=models.CASCADE)
-    price = models.DecimalField(max_digits=10, decimal_places=2)  # Preço histórico
+
+    # AJUSTE 1: Tornar o product opcional (null=True, blank=True)
+    product = models.ForeignKey(
+        Product,
+        related_name='order_items',
+        on_delete=models.SET_NULL,  # Evita apagar o pedido se o produto sumir
+        null=True,
+        blank=True
+    )
+
+    # AJUSTE 2: Adicionar o campo para o curso
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self):
-        return str(self.id)
+        return f"Item {self.id} do Pedido {self.order.id}"
 
     def get_cost(self):
         return self.price * self.quantity
@@ -142,3 +162,17 @@ class ShippingRate(models.Model):
     class Meta:
         verbose_name = 'Tabela de Frete'
         verbose_name_plural = 'Tabelas de Fretes'
+
+class OrderWine(Order):
+    """Representação para o Admin focar em Vinhos"""
+    class Meta:
+        proxy = True
+        verbose_name = 'Pedido de Vinho'
+        verbose_name_plural = '🛒 Pedidos: Vinhos'
+
+class OrderCourse(Order):
+    """Representação para o Admin focar em Cursos"""
+    class Meta:
+        proxy = True
+        verbose_name = 'Inscrição de Curso'
+        verbose_name_plural = '🎓 Pedidos: Cursos'

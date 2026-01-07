@@ -2,8 +2,10 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import Course, Lesson, LiveClass, LessonView
+from .forms import CourseEnrollmentForm
 from financial.models import Enrollment
 from products.cart import Cart
+from orders.models import Order, OrderItem
 
 from django.http import HttpResponse
 from reportlab.pdfgen import canvas
@@ -109,47 +111,24 @@ def course_list(request):
 
 
 @login_required
-def add_course_to_cart(request, course_id):
-    """
-    Adiciona um curso ao carrinho ou libera acesso imediato se for gratuito.
-    """
+def buy_now(request, course_id):
     course = get_object_or_404(Course, id=course_id)
 
-    # --- 1. VERIFICAÇÃO DE MATRÍCULA EXISTENTE ---
-    # Evita que o usuário compre ou adicione ao carrinho algo que já possui
-    already_enrolled = Enrollment.objects.filter(
-        student=request.user,
-        course=course,
-        status='paid'
-    ).exists()
-
-    if already_enrolled:
-        messages.info(request, f'Você já possui acesso ao curso "{course.title}".')
+    # Verifica se já possui acesso
+    if Enrollment.objects.filter(student=request.user, course=course, status='paid').exists():
+        messages.info(request, "Você já possui acesso a este curso.")
         return redirect('courses:detail', pk=course.id)
 
-    # --- 2. FLUXO PARA CURSOS GRATUITOS ---
+    # Fluxo Gratuito
     if course.price <= 0:
-        # Cria a matrícula com status 'paid' imediatamente
-        Enrollment.objects.get_or_create(
-            student=request.user,
-            course=course,
-            defaults={'status': 'paid'}
-        )
-        messages.success(request, f'Inscrição realizada! O curso "{course.title}" já está disponível.')
-        # Redireciona direto para a página do curso, pulando o carrinho
+        Enrollment.objects.get_or_create(student=request.user, course=course, defaults={'status': 'paid'})
         return redirect('courses:detail', pk=course.id)
 
-    # --- 3. FLUXO PARA CURSOS PAGOS ---
-    cart = Cart(request)
-
-    # Adicionamos o objeto course.
-    # IMPORTANTE: Sua classe Cart.add deve ser capaz de lidar com o objeto Course.
-    # Como seu template de carrinho usa 'product.name', e o curso usa 'title',
-    # o ajuste no template que fizemos antes (usando |default) é essencial.
-    cart.add(product=course, quantity=1)
-
-    messages.success(request, f'O curso "{course.title}" foi adicionado ao seu carrinho.')
-    return redirect('products:cart_detail')
+    # Fluxo Pago: Redireciona para preencher CPF/Telefone
+    return render(request, 'courses/finalize_enrollment.html', {
+        'course': course,
+        'form': CourseEnrollmentForm(initial={'full_name': request.user.get_full_name()})
+    })
 
 
 
@@ -182,3 +161,34 @@ def emit_certificate(request, course_id):
 
     buffer.seek(0)
     return HttpResponse(buffer, content_type='application/pdf')
+
+
+@login_required
+def finalize_course_order(request, course_id):
+    if request.method == 'POST':
+        course = get_object_or_404(Course, id=course_id)
+
+        # 1. Cria o Pedido (Order) com dados do formulário
+        # Usamos os campos que o AsaasGateway precisará para criar o cliente
+        order = Order.objects.create(
+            user=request.user,
+            first_name=request.POST.get('full_name'),
+            email=request.user.email,
+            phone=request.POST.get('phone'),
+            total_amount=course.price,
+            status='processing'
+        )
+
+        # 2. Vincula o curso ao item do pedido
+        OrderItem.objects.create(
+            order=order,
+            course=course,
+            product=None,  # Permitido pelo ajuste no models.py
+            price=course.price,
+            quantity=1
+        )
+
+        # 3. Chama o processamento de pagamento existente
+        return redirect('orders:process_payment', order_id=order.id)
+
+    return redirect('courses:course_list')

@@ -11,6 +11,9 @@ urlpatterns = [
     path('webhook/asaas/', views.asaas_webhook, name='asaas_webhook'),
     path('coupons/apply/', views.apply_coupon, name='apply_coupon'),
 
+    path('process-payment/<int:order_id>/', views.process_payment, name='process_payment'),
+    path('finalizar-curso/<int:course_id>/', views.finalize_course_order, name='finalize_course_order'),
+
     path('fale-conosco/', views.fale_conosco, name='fale_conosco'),
     path('trocas-e-devolucoes/', views.trocas_devolucoes, name='trocas'),
     path('prazos-de-entrega/', views.envios_prazos, name='envios'),

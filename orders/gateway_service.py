@@ -30,7 +30,7 @@ class AsaasGateway:
         response = requests.post(f"{self.api_url}/payments", json=payload, headers=self.headers)
         return response.json()
 
-    def get_or_create_customer(self, order):
+    def get_or_create_customer(self, order, cpf_form=None):
         """
         Busca o cliente pelo e-mail. Se não encontrar, cria um novo.
         """
@@ -47,9 +47,9 @@ class AsaasGateway:
         customer_data = {
             "name": f"{order.first_name} {order.last_name}",
             "email": order.email,
-            "cpfCnpj": "35745569000",  # Use um CPF válido para testes
-            "mobilePhone": "12997201332",
-            "notificationDisabled": True  # Evita que o Asaas envie e-mails de teste ao cliente
+            "cpfCnpj": cpf_form if cpf_form else "68516656039",
+            "mobilePhone": order.phone,
+            "notificationDisabled": True
         }
 
         response = requests.post(f"{self.api_url}/customers", json=customer_data, headers=self.headers)

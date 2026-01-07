@@ -8,7 +8,7 @@ urlpatterns = [
     path('todos/', views.course_list, name='course_list'),
     path('<int:pk>/', views.course_detail, name='detail'),
 
-    path('comprar/<int:course_id>/', views.add_course_to_cart, name='add_to_cart'),
+    path('comprar-agora/<int:course_id>/', views.buy_now, name='buy_now'),
 
     # Rota para a sala de aula (ex: /cursos/aula/5/)
     path('aula/<int:pk>/', views.lesson_detail, name='lesson_detail'),

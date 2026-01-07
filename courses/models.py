@@ -10,7 +10,8 @@ class Course(models.Model):
     description = models.TextField("Descrição", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     price = models.DecimalField("Preço", max_digits=10, decimal_places=2, default=0.00)
-    # instructor = models.ForeignKey(User, ...) # Futuramente
+    image = models.ImageField("Capa do Curso", upload_to='courses/covers/', blank=True, null=True)
+    is_active = models.BooleanField(default=True)
 
     # NOVO CAMPO: Imagem de fundo do certificado
     certificate_template = models.ImageField(

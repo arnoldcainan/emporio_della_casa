@@ -91,7 +91,7 @@
 
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}" class="text-decoration-none text-muted">Meus Cursos</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'courses:my_courses' %}" class="text-decoration-none text-muted">Meus Cursos</a></li>
             <li class="breadcrumb-item active fw-bold" style="color: var(--primary-color);" aria-current="page">Grade Curricular</li>
         </ol>
     </nav>
@@ -128,15 +128,10 @@
                         <div class="text-center">
                             <i class="bi bi-trophy-fill text-success fs-1 mb-2"></i>
                             <h5 class="fw-bold text-success">Curso Concluído!</h5>
-                            <a href="{% url 'certificates:emit' course.id %}" class="btn btn-success rounded-pill fw-bold w-100 shadow-sm mt-2">
+                            <a href="{% url 'courses:emit_certificate' course.id %}" target="_blank" class="btn btn-success rounded-pill fw-bold w-100 shadow-sm mt-2">
                                 <i class="bi bi-award-fill me-2"></i> Baixar Certificado
                             </a>
                         </div>
-                    </div>
-                {% else %}
-                    <div class="d-inline-block text-center p-3 rounded-3 bg-light border">
-                        <span class="d-block h4 fw-bold mb-0" style="color: var(--secondary-color);">{{ course.modules.count }}</span>
-                        <small class="text-uppercase text-muted" style="font-size: 0.75rem; letter-spacing: 1px;">Módulos</small>
                     </div>
                 {% endif %}
             </div>

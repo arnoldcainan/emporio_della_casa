@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
-
+from courses.models import Course
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -44,6 +44,15 @@ class Product(models.Model):
     alcohol_content = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True,
                                           verbose_name="Teor Alcoólico")
     volume = models.CharField(max_length=50, blank=True, default="750ml")
+
+    related_course = models.ForeignKey(
+        Course,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Curso Vinculado",
+        help_text="Se este produto for um curso, selecione-o aqui para liberação automática."
+    )
 
     def save(self, *args, **kwargs):
         if not self.slug:

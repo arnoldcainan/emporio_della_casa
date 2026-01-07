@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load course_tags %} {# Importante carregar as tags para usar o has_access #}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="text-burgundy fw-bold mb-4">🍷 Nossa Academia de Vinhos</h2>
+    <div class="row g-4">
+        {% for course in courses %}
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                {# Espaço para imagem ou ícone #}
+                <div class="bg-secondary bg-opacity-10 d-flex align-items-center justify-content-center" style="height: 200px;">
+                    {% if course.image %}
+                        <img src="{{ course.image.url }}" class="w-100 h-100 object-fit-cover" alt="{{ course.title }}">
+                    {% else %}
+                        <i class="bi bi-journal-bookmark text-burgundy opacity-25" style="font-size: 5rem;"></i>
+                    {% endif %}
+                </div>
+
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-2">{{ course.title }}</h5>
+                    <p class="text-muted small">{{ course.description|truncatewords:15 }}</p>
+
+                    <div class="d-flex flex-column gap-2 mt-4">
+                        {# Lógica Dinâmica de Compra vs Acesso #}
+                        {% has_access user course as user_has_access %}
+
+                        {% if user_has_access %}
+                            {# Se já comprou, mostra apenas o botão de acesso #}
+                            <div class="alert alert-success py-2 px-3 mb-2 rounded-pill d-flex align-items-center justify-content-center" style="font-size: 0.85rem;">
+                                <i class="bi bi-check-circle-fill me-2"></i> Você já possui este curso
+                            </div>
+                            <a href="{% url 'courses:detail' course.id %}" class="btn btn-burgundy rounded-pill w-100 shadow-sm">
+                                <i class="bi bi-play-fill me-1"></i> Acessar Agora
+                            </a>
+                        {% else %}
+                            {# Se não comprou, mostra o preço e as opções de compra #}
+                            <span class="fs-4 fw-bold text-burgundy">R$ {{ course.price }}</span>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'courses:detail' course.id %}" class="btn btn-outline-secondary rounded-pill flex-grow-1">Detalhes</a>
+                                <a href="{% url 'courses:add_to_cart' course.id %}" class="btn btn-burgundy rounded-pill flex-grow-1 shadow-sm">
+                                    <i class="bi bi-cart-plus me-1"></i> Comprar
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <p class="text-muted">Nenhum curso disponível no momento.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

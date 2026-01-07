@@ -12,7 +12,7 @@
                     <table class="table align-middle">
                         <thead class="text-muted small">
                             <tr>
-                                <th>VINHO</th>
+                                <th>ITEM</th>
                                 <th class="text-center">QTD</th>
                                 <th>TOTAL</th>
                                 <th></th>
@@ -24,28 +24,43 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center">
+                                        {# Lógica de Imagem Protegida #}
                                         {% if product.image %}
                                             <img src="{{ product.image.url }}" width="50" class="me-3 rounded shadow-sm">
+                                        {% else %}
+                                            <div class="me-3 bg-light rounded d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                <i class="bi bi-mortarboard text-burgundy fs-4"></i>
+                                            </div>
                                         {% endif %}
+
                                         <div>
-                                            <h6 class="mb-0 fw-bold">{{ product.name }}</h6>
-                                            <small class="text-muted">{{ product.grape }}</small>
+                                            {# Tenta pegar 'title' (curso) ou 'name' (vinho) #}
+                                            <h6 class="mb-0 fw-bold">{{ product.title|default:product.name }}</h6>
+                                            {# Tenta pegar a uva, se não existir assume que é curso #}
+                                            <small class="text-muted">
+                                                {% if product.grape %}{{ product.grape }}{% else %}Conteúdo Digital{% endif %}
+                                            </small>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="d-flex justify-content-center align-items-center">
-                                        <form action="{% url 'products:cart_update' product.id %}" method="post">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="action" value="remove">
-                                            <button type="submit" class="btn btn-sm btn-light rounded-circle">-</button>
-                                        </form>
-                                        <span class="mx-3 fw-bold">{{ item.quantity }}</span>
-                                        <form action="{% url 'products:cart_update' product.id %}" method="post">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="action" value="add">
-                                            <button type="submit" class="btn btn-sm btn-light rounded-circle">+</button>
-                                        </form>
+                                        {# Se for curso (identificado por não ter 'grape'), trava a quantidade em 1 #}
+                                        {% if not product.grape %}
+                                            <span class="fw-bold">1</span>
+                                        {% else %}
+                                            <form action="{% url 'products:cart_update' product.id %}" method="post">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="remove">
+                                                <button type="submit" class="btn btn-sm btn-light rounded-circle">-</button>
+                                            </form>
+                                            <span class="mx-3 fw-bold">{{ item.quantity }}</span>
+                                            <form action="{% url 'products:cart_update' product.id %}" method="post">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="add">
+                                                <button type="submit" class="btn btn-sm btn-light rounded-circle">+</button>
+                                            </form>
+                                        {% endif %}
                                     </div>
                                 </td>
                                 <td class="fw-bold" style="color: var(--burgundy);">R$ {{ item.total_price }}</td>
@@ -71,7 +86,7 @@
                     <span class="fw-bold">R$ {{ cart.get_total_price }}</span>
                 </div>
                 <div class="small text-muted bg-light p-3 rounded-3 mb-4">
-                    <i class="bi bi-truck me-2"></i> Frete será calculado na entrega.
+                    <i class="bi bi-info-circle me-2"></i> Itens digitais são liberados imediatamente.
                 </div>
                 <hr>
                 <div class="d-flex justify-content-between mb-4">
@@ -87,9 +102,9 @@
     </div>
     {% else %}
     <div class="text-center py-5 bg-white rounded-4 shadow-sm">
-        <i class="bi bi-cup-straw display-1 text-muted"></i>
-        <h3 class="mt-4 text-muted">Sua adega está vazia.</h3>
-        <a href="{% url 'products:home' %}" class="btn btn-burgundy px-5 py-2 mt-3">Explorar Vinhos</a>
+        <i class="bi bi-cart-x display-1 text-muted"></i>
+        <h3 class="mt-4 text-muted">Seu carrinho está vazio.</h3>
+        <a href="{% url 'courses:course_list' %}" class="btn btn-burgundy px-5 py-2 mt-3">Ver Cursos</a>
     </div>
     {% endif %}
 </div>

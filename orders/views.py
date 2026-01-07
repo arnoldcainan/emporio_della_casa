@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from .models import OrderItem, Order, ShippingRate
 from .forms import OrderCreateForm
+from financial.models import Enrollment
 from products.cart import Cart
 from .services import calculate_shipping
 from django.http import JsonResponse
@@ -11,8 +12,10 @@ from .gateway_service import AsaasGateway
 from coupons.models import Coupon
 from django.utils import timezone
 
+from django.contrib.auth import login
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
 import json
 
 
@@ -115,29 +118,55 @@ def get_shipping_quote(request):
     except ShippingRate.DoesNotExist:
         return JsonResponse({'success': False, 'message': 'Região não atendida.'})
 
+
 @csrf_exempt
 def asaas_webhook(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        print(f"--- WEBHOOK RECEBIDO ---")
-        print(f"JSON: {data}")  # Isso vai mostrar tudo no seu terminal
+        try:
+            data = json.loads(request.body)
+            event = data.get('event')
+            payment = data.get('payment', {})
+            external_reference = payment.get('externalReference')
 
-        event = data.get('event')
-        payment = data.get('payment', {})
-        external_reference = payment.get('externalReference')
+            # Eventos de confirmação do Asaas
+            if event in ['PAYMENT_CONFIRMED', 'PAYMENT_RECEIVED']:
+                try:
+                    # 1. Atualiza o status do Pedido
+                    order = Order.objects.get(id=external_reference)
+                    order.paid = True
+                    order.save()
+                    print(f"✅ Pedido {order.id} pago.")
 
-        if event in ['PAYMENT_CONFIRMED', 'PAYMENT_RECEIVED']:
-            try:
-                # O ID que o Asaas devolve no externalReference deve ser o ID do seu Pedido
-                order = Order.objects.get(id=external_reference)
-                order.paid = True
-                order.save()
-                print(f"✅ SUCESSO: Pedido {external_reference} atualizado!")
-            except Exception as e:
-                print(f"❌ ERRO AO SALVAR: {e}")
+                    # 2. Varre os itens do pedido em busca de cursos
+                    for item in order.items.all():
+                        # Se o produto tiver um curso vinculado no models.py
+                        if item.product.related_course:
+                            course = item.product.related_course
 
-        return HttpResponse(status=200)
-    return HttpResponse(status=400)
+                            # Cria a matrícula liberada (status 'paid')
+                            enrollment, created = Enrollment.objects.get_or_create(
+                                student=order.user,
+                                course=course,
+                                defaults={'status': 'paid'}
+                            )
+
+                            # Se já existia (ex: boleto vencido e pago depois), força o 'paid'
+                            if not created:
+                                enrollment.status = 'paid'
+                                enrollment.save()
+
+                            print(f"🎓 Curso '{course.title}' liberado para {order.user.email}")
+
+                except Order.DoesNotExist:
+                    print(f"❌ Erro: Pedido {external_reference} não encontrado no banco.")
+                except Exception as e:
+                    print(f"❌ Erro ao processar itens: {e}")
+
+            return HttpResponse(status=200)
+        except json.JSONDecodeError:
+            return HttpResponse(status=400)
+
+    return HttpResponse(status=405)
 
 
 # No seu arquivo orders/views.py
@@ -200,18 +229,23 @@ def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            # 1. Salva o novo usuário no banco de dados
+            # Salva o usuário no banco local
             user = form.save()
 
-            # 2. Realiza o login automático do usuário recém-criado
-            # O Django autentica a sessão imediatamente
-            login(request, user)
+            # Especificamos o backend para o Django 6.0 não dar erro 500
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 
-            messages.success(request, f'Bem-vindo, {user.first_name}! Sua conta foi criada e você já está logado.')
+            messages.success(request, f'Bem-vindo, {user.first_name}!')
 
-            # 3. Redireciona para a página de cursos ou home (já logado)
+            # Redireciona para a URL correta
             return redirect('courses:my_courses')
     else:
         form = CustomUserCreationForm()
 
+    # Renderiza o template na pasta que você organizou
     return render(request, 'registration/register.html', {'form': form})
+
+@login_required
+def my_orders(request):
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'orders/my_orders.html', {'orders': orders})

@@ -217,7 +217,7 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # Após o login, leva o cliente para a área de cursos
-LOGIN_REDIRECT_URL = '/cursos/meus-cursos/'
+LOGIN_REDIRECT_URL = '/cursos/todos/'
 
 # Se o cliente tentar acessar uma aula sem estar logado, ele é mandado para cá
 LOGIN_URL = 'login'

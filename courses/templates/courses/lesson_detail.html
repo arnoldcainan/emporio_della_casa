@@ -127,7 +127,7 @@
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}" class="text-decoration-none text-muted">Meus Cursos</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'courses:my_courses' %}" class="text-decoration-none text-muted">Meus Cursos</a></li>
                 <li class="breadcrumb-item">
                     <a href="{% url 'courses:detail' lesson.module.course.id %}" class="text-decoration-none" style="color: var(--primary-color);">
                         {{ lesson.module.course.title }}
@@ -250,8 +250,8 @@
                                 Próxima Aula <i class="bi bi-arrow-right"></i>
                             </a>
                         {% else %}
-                            <a href="{% url 'assessments:take_quiz' lesson.module.id %}" class="btn btn-exam nav-btn d-flex align-items-center gap-2">
-                                <i class="bi bi-trophy-fill"></i> Avaliação Final
+                            <a href="{% url 'courses:detail' lesson.module.course.id %}" class="btn btn-exam nav-btn d-flex align-items-center gap-2">
+                                <i class="bi bi-trophy-fill"></i> Concluir Módulo
                             </a>
                         {% endif %}
                     </div>

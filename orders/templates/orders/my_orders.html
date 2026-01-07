@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+    <h2 class="text-burgundy fw-bold mb-4">Meus Pedidos</h2>
+    <div class="table-responsive bg-white shadow-sm rounded-4 p-4">
+        <table class="table align-middle">
+            <thead class="text-muted">
+                <tr>
+                    <th>Pedido #</th>
+                    <th>Data</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td class="fw-bold">#{{ order.id }}</td>
+                    <td>{{ order.created_at|date:"d/m/Y" }}</td>
+                    <td>R$ {{ order.total_amount }}</td>
+                    <td>
+                        {% if order.paid %}
+                            <span class="badge bg-success rounded-pill">Pago</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark rounded-pill">Pendente</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="#" class="btn btn-sm btn-outline-secondary rounded-pill">Detalhes</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center py-4 text-muted">Você ainda não fez nenhum pedido.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

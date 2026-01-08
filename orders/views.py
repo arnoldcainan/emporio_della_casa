@@ -245,7 +245,7 @@ def register(request):
             messages.success(request, f'Bem-vindo, {user.first_name}!')
 
             # Redireciona para a URL correta
-            return redirect('courses:my_courses')
+            return redirect('courses:course_list')
     else:
         form = CustomUserCreationForm()
 

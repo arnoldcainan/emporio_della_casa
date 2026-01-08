@@ -1,22 +1,73 @@
 {% extends 'base.html' %}
+
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0 p-4">
-                <h3 class="fw-bold mb-3">Finalizar Inscrição</h3>
-                <p class="text-muted">Curso: <strong>{{ course.title }}</strong></p>
-                <p class="h4 text-burgundy mb-4">Total: R$ {{ course.price }}</p>
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                <div class="bg-burgundy p-4 text-center text-white">
+                    <div class="bg-light d-inline-block rounded-circle p-3 mb-3 shadow-sm">
+                        <i class="bi bi-mortarboard text-burgundy fs-1"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">Finalizar Inscrição</h3>
+                    <p class="opacity-75 mb-0">Confirme seus dados para acesso imediato</p>
+                </div>
 
-                <form action="{% url 'orders:finalize_course_order' course.id %}" method="post">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <button type="submit" class="btn btn-burgundy w-100 py-3 mt-3">
-                        Ir para Pagamento Safe
-                    </button>
-                </form>
+                <div class="card-body p-4 p-md-5">
+                    <div class="d-flex align-items-center mb-4 p-3 bg-light rounded-3 border-start border-4 border-burgundy">
+                        <div class="flex-grow-1">
+                            <small class="text-muted text-uppercase fw-bold ls-1" style="font-size: 0.7rem;">Curso Selecionado</small>
+                            <h5 class="fw-bold mb-0 text-dark">{{ course.title }}</h5>
+                        </div>
+                        <div class="text-end">
+                            <span class="h4 fw-bold text-burgundy">R$ {{ course.price }}</span>
+                        </div>
+                    </div>
+
+                    <form action="{% url 'orders:finalize_course_order' course.id %}" method="post" id="enrollmentForm">
+                        {% csrf_token %}
+
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger small mt-1">{{ field.errors|first }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+
+                        <div class="mt-4 pt-2">
+                            <button type="submit" class="btn btn-burgundy btn-lg w-100 py-3 fw-bold rounded-3 shadow">
+                                <i class="bi bi-shield-lock-fill me-2"></i> Ir para Pagamento Seguro
+                            </button>
+                            <p class="text-center text-muted small mt-3">
+                                <i class="bi bi-lock me-1"></i> Ambiente de pagamento criptografado
+                            </p>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+<script>
+    $(document).ready(function(){
+        $('.cpf-mask').mask('000.000.000-00');
+        $('.phone-mask').mask('(00) 00000-0000');
+    });
+</script>
+
+<style>
+    .bg-burgundy { background-color: var(--burgundy) !important; }
+    .text-burgundy { color: var(--burgundy) !important; }
+    .ls-1 { letter-spacing: 1px; }
+    .form-control:focus {
+        border-color: var(--burgundy);
+        box-shadow: 0 0 0 0.25rem rgba(128, 0, 32, 0.1);
+    }
+</style>
 {% endblock %}

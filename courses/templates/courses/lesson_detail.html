@@ -146,16 +146,17 @@
                     <div class="card video-card mb-4">
                         <div class="ratio ratio-16x9">
                             {% if lesson.get_video_type == 'youtube' %}
-                                <iframe src="https://www.youtube.com/embed/{{ lesson.get_video_id }}?rel=0&modestbranding=1" title="{{ lesson.title }}" allowfullscreen style="border:0;"></iframe>
-                            {% elif lesson.get_video_type == 'vimeo' %}
-                                <iframe src="https://player.vimeo.com/video/{{ lesson.get_video_id }}" title="{{ lesson.title }}" allow="autoplay; fullscreen" allowfullscreen style="border:0;"></iframe>
-                            {% elif lesson.get_video_type == 'bunny' %}
-                                <iframe src="{{ lesson.video_url }}" title="{{ lesson.title }}" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true" style="border:0;"></iframe>
-                            {% else %}
-                                <div class="d-flex align-items-center justify-content-center bg-dark text-white h-100">
-                                    <p>Link de vídeo não reconhecido ou formato inválido.</p>
-                                </div>
-                            {% endif %}
+                                    <iframe
+                                        src="https://www.youtube.com/embed/{{ lesson.get_video_id }}?rel=0&modestbranding=1"
+                                        title="{{ lesson.title }}"
+                                        frameborder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                        referrerpolicy="strict-origin-when-cross-origin"
+                                        allowfullscreen>
+                                    </iframe>
+                                {% elif lesson.get_video_type == 'vimeo' %}
+                                    <iframe src="https://player.vimeo.com/video/{{ lesson.get_video_id }}" ...></iframe>
+                                {% endif %}
                         </div>
                     </div>
                 {% endif %}

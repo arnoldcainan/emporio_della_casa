@@ -71,19 +71,19 @@ class Lesson(models.Model):
         if not self.video_url:
             return None
 
-        # Lógica para YouTube (Regex robusto de 11 caracteres)
+        # Lógica para YouTube (Regex atualizado e blindado contra ?si=)
         if self.get_video_type == 'youtube':
-            regex = r'(?:v=|/)([0-9A-Za-z_-]{11}).*'
+            # Procura por v=, embed/, ou a barra final de um link curto, seguido de 11 chars
+            regex = r'(?:v=|be\/|embed\/|shorts\/)([0-9A-Za-z_-]{11})'
             match = re.search(regex, self.video_url)
             return match.group(1) if match else None
 
-        # Lógica para Vimeo (ID numérico)
+        # ... mantenha o resto do código para Vimeo e Bunny ...
         if self.get_video_type == 'vimeo':
             regex = r'vimeo\.com/(?:.*#|.*/videos/)?([0-9]+)'
             match = re.search(regex, self.video_url)
             return match.group(1) if match else None
 
-        # Lógica para Bunny.net (Retorna a URL inteira do iframe)
         if self.get_video_type == 'bunny':
             return self.video_url
 

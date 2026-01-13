@@ -1,0 +1,77 @@
+<div id="ageModal" class="age-modal-overlay">
+    <div class="age-modal-content">
+        <div class="age-modal-logo">
+            <i class="bi bi-wine-glass-alt fs-1 text-burgundy"></i>
+        </div>
+        <h2 class="mb-3">Bem-vindo ao Empório Della Casa</h2>
+        <p class="lead mb-4">Você tem 18 anos ou mais?</p>
+        <p class="small text-muted mb-4">A venda de bebidas alcoólicas é proibida para menores de 18 anos.</p>
+
+        <div class="d-grid gap-2">
+            <button id="btnYes" class="btn btn-burgundy btn-lg">SIM, TENHO MAIS DE 18 ANOS</button>
+            <button id="btnNo" class="btn btn-secondary">NÃO, SOU MENOR DE IDADE</button>
+        </div>
+        <div class="mt-3">
+             <small class="text-muted fst-italic">Beba com moderação.</small>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Bloqueio total da tela */
+    .age-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.95);
+        z-index: 9999;
+        display: none; /* Começa oculto, o JS decide se mostra */
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(5px);
+    }
+
+    .age-modal-content {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 15px;
+        text-align: center;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        border-top: 5px solid #4A0404;
+    }
+
+    body.modal-open {
+        overflow: hidden;
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const modal = document.getElementById('ageModal');
+        const btnYes = document.getElementById('btnYes');
+        const btnNo = document.getElementById('btnNo');
+
+        // Verifica localStorage
+        if (!localStorage.getItem('age_verified')) {
+            modal.style.display = 'flex';
+            document.body.classList.add('modal-open');
+        }
+
+        // Ação: SIM
+        btnYes.addEventListener('click', function() {
+            localStorage.setItem('age_verified', 'true');
+            modal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+        });
+
+        // Ação: NÃO
+        btnNo.addEventListener('click', function() {
+            alert("Desculpe, este site é restrito para maiores de 18 anos.");
+            window.location.href = "https://www.google.com";
+        });
+    });
+</script>

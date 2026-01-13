@@ -37,6 +37,7 @@ class NewsletterAdmin(admin.ModelAdmin):
         # Escreve o cabeçalho
         writer.writerow(['E-mail', 'Data de Inscrição'])
 
+
         # Escreve os dados
         for obj in queryset:
             writer.writerow([obj.email, obj.created_at.strftime('%d/%m/%Y %H:%M')])

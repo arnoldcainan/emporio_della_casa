@@ -25,6 +25,8 @@ class Order(models.Model):
     )
 
     address = models.CharField(max_length=250)
+    number = models.CharField('Número', max_length=10)  # Obrigatório
+    complement = models.CharField('Complemento', max_length=100, blank=True, null=True)  # Opcional
     postal_code = models.CharField(
         'CEP',
         max_length=20,

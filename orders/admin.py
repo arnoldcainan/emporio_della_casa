@@ -29,7 +29,7 @@ class OrderWineAdmin(admin.ModelAdmin):
     # Reaproveitamos seus fieldsets originais aqui (com endereço e frete)
     fieldsets = (
         ('Informações do Cliente', {'fields': ('first_name', 'last_name', 'email', 'phone')}),
-        ('Endereço de Entrega', {'fields': ('postal_code', 'address', 'city', 'state')}),
+        ('Endereço de Entrega', {'fields': ('postal_code', 'address', 'number', 'complement', 'city', 'state')}),
         ('Logística e Pagamento', {'fields': ('shipping_method', 'shipping_cost', 'paid', 'coupon', 'discount')}),
     )
 

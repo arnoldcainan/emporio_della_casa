@@ -68,6 +68,20 @@
                         {% if form.address.errors %}<div class="text-danger small mt-1 fw-bold">{{ form.address.errors.0 }}</div>{% endif %}
                     </div>
 
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Número</label>
+                        {{ form.number }}
+                        {% if form.number.errors %}<div class="text-danger small mt-1 fw-bold">{{ form.number.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Complemento</label>
+                        {{ form.complement }}
+                        <div class="form-text small" style="font-size: 0.7rem;">Ex: Apto 101, Bloco B</div>
+                    </div>
+
+
+
                     <div class="col-md-8">
                         <label class="form-label small fw-bold text-muted text-uppercase">Cidade</label>
                         {{ form.city }}
@@ -230,6 +244,10 @@
                         document.querySelector('input[name="address"]').value = `${data.logradouro}, ${data.bairro}`;
                         document.querySelector('input[name="city"]').value = data.localidade;
                         document.querySelector('input[name="state"]').value = data.uf;
+
+                        // FOCA NO CAMPO NÚMERO AUTOMATICAMENTE
+                        document.querySelector('input[name="number"]').focus();
+
 
                         // Busca Opções de Frete baseadas na UF retornada
                         fetch(`/orders/get-shipping-quote/?city=${data.uf}`)

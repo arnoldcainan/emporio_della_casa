@@ -29,7 +29,13 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    'emporiodellacasa-production.up.railway.app',
+    'www.emporiodellacasa.com.br',
+    'emporiodellacasa.com.br',
+    'localhost',
+    '127.0.0.1'
+]
 
 
 # Application definition
@@ -48,6 +54,7 @@ INSTALLED_APPS = [
     'coupons',
     'courses',
     'financial',
+    'pages',
 ]
 
 MIDDLEWARE = [
@@ -214,6 +221,8 @@ JAZZMIN_UI_TUNER = {
 
 CSRF_TRUSTED_ORIGINS = [
     'https://emporiodellacasa-production.up.railway.app',
+    'https://www.emporiodellacasa.com.br',
+    'https://emporiodellacasa.com.br',
 ]
 
 # Após o login, leva o cliente para a área de cursos

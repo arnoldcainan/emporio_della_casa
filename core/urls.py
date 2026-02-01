@@ -47,6 +47,7 @@ urlpatterns = [
 
     path('orders/', include('orders.urls', namespace='orders')),
     path('fale-conosco/', order_views.fale_conosco, name='fale_conosco'),
+    path('pages/', include('pages.urls', namespace='pages')),
     path('trocas-e-devolucoes/', order_views.trocas_devolucoes, name='trocas'),
     path('prazos-de-entrega/', order_views.envios_prazos, name='envios'),
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),

@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm
+from django.core.mail import send_mail
+from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from .models import OrderItem, Order, ShippingRate
@@ -125,6 +126,9 @@ def get_shipping_quote(request):
 
 @csrf_exempt
 def asaas_webhook(request):
+    """
+    Webhook Híbrido: Aceita pagamentos via Order (Carrinho) e via Enrollment (Checkout Direto)
+    """
     if request.method == 'POST':
         token_recebido = request.headers.get('asaas-access-token')
         if token_recebido != settings.ASAAS_WEBHOOK_TOKEN:
@@ -134,44 +138,72 @@ def asaas_webhook(request):
             data = json.loads(request.body)
             event = data.get('event')
             payment = data.get('payment', {})
+            external_ref = payment.get('externalReference')
 
-            # O externalReference agora é sempre o ID do Pedido (Order)
-            order_id = payment.get('externalReference')
             CONFIRMATION_EVENTS = ['PAYMENT_RECEIVED', 'PAYMENT_CONFIRMED']
 
-            if event in CONFIRMATION_EVENTS and order_id:
-                try:
-                    # 1. Busca o pedido no banco
-                    order = Order.objects.get(id=order_id)
+            if event in CONFIRMATION_EVENTS and external_ref:
 
+                # --- TENTATIVA 1: Tenta achar como ORDER ---
+                try:
+                    order = Order.objects.get(id=external_ref)
+
+                    # Atualiza Status do Pedido
                     if not order.paid:
                         order.paid = True
+                        order.status = 'paid'  # Certifique-se que 'paid' existe no seu STATUS_CHOICES ou use 'processing'/'shipped'
                         order.save()
-                        print(f"✅ Pedido {order.id} marcado como pago.")
+                        print(f"✅ Webhook: Pedido {order.id} processado como ORDER.")
 
-                        # 2. Varre os itens para liberar cursos se houver
+                    # Libera cursos vinculados à Order
+                    try:
+                        # Busca usuário pelo e-mail do pedido (mais seguro que order.user)
+                        student_user = User.objects.get(email=order.email)
+
+                        # AQUI ESTÁ O PULO DO GATO:
+                        # Como seu model tem related_name='items', usamos .items.all()
                         for item in order.items.all():
-                            if item.course:  # Se o item do pedido for um curso
+                            if item.course:
                                 enrollment, created = Enrollment.objects.get_or_create(
-                                    student=order.user,
+                                    student=student_user,
                                     course=item.course,
                                     defaults={'status': 'paid'}
                                 )
-                                if not created:
+                                if not created or enrollment.status != 'paid':
                                     enrollment.status = 'paid'
                                     enrollment.save()
+                                print(f"🎓 Curso '{item.course.title}' liberado para {student_user.email}")
 
+                    except User.DoesNotExist:
+                        print(f"⚠️ Usuário com email {order.email} não encontrado.")
 
-                            elif item.product:
-                                # Aqui você pode adicionar lógica específica para vinhos (ex: baixar estoque)
-                                print(f"🍷 Vinho '{item.product.name}' processado no pedido.")
+                    return JsonResponse({'status': 'order_processed'})
 
-                except Order.DoesNotExist:
-                    print(f"❌ Erro: Pedido {order_id} não encontrado.")
+                except (Order.DoesNotExist, ValueError):
+                    # --- TENTATIVA 2: Enrollment (Legado) ---
+                    try:
+                        enrollment = Enrollment.objects.get(id=external_ref)
+                        if enrollment.status != 'paid':
+                            enrollment.status = 'paid'
+                            enrollment.save()
+
+                            send_mail(
+                                f'Acesso Liberado: {enrollment.course.title}',
+                                'Seu pagamento foi confirmado.',
+                                settings.DEFAULT_FROM_EMAIL,
+                                [enrollment.student.email],
+                                fail_silently=True
+                            )
+                        return JsonResponse({'status': 'enrollment_processed'})
+                    except (Enrollment.DoesNotExist, ValueError):
+                        print(f"❌ ERRO: Referência {external_ref} não encontrada.")
 
             return JsonResponse({'status': 'received'})
+
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Method not allowed'}, status=405)
 

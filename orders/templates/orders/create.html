@@ -154,6 +154,19 @@
 </style>
 
 <script>
+    // --- 0. VACINA PARA O ERRO 500 (NOVO) ---
+    // Destrava campos readonly/disabled no exato momento do envio para o Django não rejeitar
+    document.getElementById('checkout-form').addEventListener('submit', function() {
+        const fieldsToUnlock = ['address', 'city', 'state', 'number', 'complement', 'postal_code'];
+        fieldsToUnlock.forEach(name => {
+            const field = document.querySelector(`[name="${name}"]`);
+            if (field) {
+                field.removeAttribute('disabled'); // Remove o bloqueio que impede o envio
+                field.setAttribute('readonly', 'readonly'); // Mantém visualmente travado
+            }
+        });
+    });
+
     // 1. INICIALIZAÇÃO DE VALORES
     // Tratamento robusto para garantir que o subtotal seja um número decimal válido
     let cartSubtotal = parseFloat("{{ cart.get_total_price }}".replace('.', '').replace(',', '.'));

@@ -50,9 +50,7 @@ def order_create(request):
                     order.coupon = None
                     order.discount = 0
                     request.session['coupon_id'] = None
-
             # --- 2. LÓGICA DE FRETE (AGORA FORA DO BLOCO DO CUPOM) ---
-
             state_uf = form.cleaned_data.get('state').strip().upper()
             selected_method = request.POST.get('shipping_method')
 

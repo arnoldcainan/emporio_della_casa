@@ -146,17 +146,17 @@ class OrderDashboard(Order):
 class ShippingRate(models.Model):
     state = models.CharField('Estado (UF)', max_length=2, unique=True)
 
-    # PAC
-    pac_cost = models.DecimalField('Custo PAC', max_digits=10, decimal_places=2)
-    pac_days = models.PositiveIntegerField('Prazo PAC (dias)')
+    # PAC (Vamos assumir que PAC quase sempre existe, mas pode deixar opcional por segurança)
+    pac_cost = models.DecimalField('Custo PAC', max_digits=10, decimal_places=2, null=True, blank=True)
+    pac_days = models.PositiveIntegerField('Prazo PAC (dias)', null=True, blank=True)
 
     # SEDEX
-    sedex_cost = models.DecimalField('Custo SEDEX', max_digits=10, decimal_places=2)
-    sedex_days = models.PositiveIntegerField('Prazo SEDEX (dias)')
+    sedex_cost = models.DecimalField('Custo SEDEX', max_digits=10, decimal_places=2, null=True, blank=True)
+    sedex_days = models.PositiveIntegerField('Prazo SEDEX (dias)', null=True, blank=True)
 
-    # Transportadora
-    delivery_cost = models.DecimalField('Custo Transportadora', max_digits=10, decimal_places=2)
-    delivery_days = models.PositiveIntegerField('Prazo Transportadora (dias)')
+    # Transportadora (Agora opcional)
+    delivery_cost = models.DecimalField('Custo Transportadora', max_digits=10, decimal_places=2, null=True, blank=True)
+    delivery_days = models.PositiveIntegerField('Prazo Transportadora (dias)', null=True, blank=True)
 
     def __str__(self):
         return f"Fretes para {self.state}"

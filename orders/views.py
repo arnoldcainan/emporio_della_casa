@@ -35,11 +35,10 @@ def order_create(request):
         if form.is_valid():
             order = form.save(commit=False)
 
-            # 1. LOGICA DE CUPOM (Mantida)
+            # --- 1. LÓGICA DE CUPOM ---
             coupon_id = request.session.get('coupon_id')
             if coupon_id:
                 try:
-                    # Validamos data e atividade novamente antes de salvar o pedido
                     coupon = Coupon.objects.get(id=coupon_id, active=True,
                                                 valid_from__lte=timezone.now(),
                                                 valid_to__gte=timezone.now())
@@ -50,33 +49,54 @@ def order_create(request):
                 except Coupon.DoesNotExist:
                     order.coupon = None
                     order.discount = 0
-                    request.session['coupon_id'] = None  # Limpa cupom inválido
+                    request.session['coupon_id'] = None
 
-            # 2. LOGICA DE FRETE (Lendo o novo campo state)
-            state_uf = form.cleaned_data.get('state').strip().upper()  # Pega a UF vinda do BuscaCEP
-            selected_method = request.POST.get('shipping_method')  # 'pac', 'sedex' ou 'delivery'
+            # --- 2. LÓGICA DE FRETE (AGORA FORA DO BLOCO DO CUPOM) ---
+
+            state_uf = form.cleaned_data.get('state').strip().upper()
+            selected_method = request.POST.get('shipping_method')
 
             try:
                 from .models import ShippingRate
                 rate = ShippingRate.objects.get(state__iexact=state_uf)
-                # Salva o identificador do método para o seu controle logístico
-                order.shipping_method = selected_method
 
-                if selected_method == 'sedex':
+                # Valores padrão (Safety First)
+                order.shipping_method = 'pac'
+                order.shipping_cost = 0
+
+                # Lógica de Prioridade: Só aceita se o valor existir (is not None) no banco
+
+                # Caso 1: Escolheu SEDEX e SEDEX existe para esse estado
+                if selected_method == 'sedex' and rate.sedex_cost is not None:
                     order.shipping_cost = rate.sedex_cost
-                elif selected_method == 'delivery':
+                    order.shipping_method = 'sedex'
+
+                # Caso 2: Escolheu Transportadora e ela existe
+                elif selected_method == 'delivery' and rate.delivery_cost is not None:
                     order.shipping_cost = rate.delivery_cost
-                else:
+                    order.shipping_method = 'delivery'
+
+                # Caso 3: Escolheu PAC (ou fallback padrão) e PAC existe
+                elif rate.pac_cost is not None:
                     order.shipping_cost = rate.pac_cost
                     order.shipping_method = 'pac'
+
+                # Caso 4 (Emergência): Se PAC for None (ex: estado só tem Sedex), pega o que tiver
+                else:
+                    if rate.sedex_cost is not None:
+                        order.shipping_cost = rate.sedex_cost
+                        order.shipping_method = 'sedex'
+                    elif rate.delivery_cost is not None:
+                        order.shipping_cost = rate.delivery_cost
+                        order.shipping_method = 'delivery'
 
             except ShippingRate.DoesNotExist:
                 form.add_error('state', f"Logística indisponível para {state_uf}.")
                 return render(request, 'orders/create.html', {'cart': cart, 'form': form})
 
-            # Salva o estado no pedido também
+            # --- 3. SALVAMENTO FINAL ---
             order.state = state_uf
-            order.save()  # Agora salva tudo
+            order.save()
 
             for item in cart:
                 OrderItem.objects.create(
@@ -86,10 +106,15 @@ def order_create(request):
                     quantity=item['quantity']
                 )
 
-            # 4. PAGAMENTO ASAAS
-            gateway = AsaasGateway()
-            payment_response = gateway.create_payment(order, billing_type='UNDEFINED')
-            payment_url = payment_response.get('invoiceUrl')
+            # --- 4. PAGAMENTO ASAAS ---
+            try:
+                gateway = AsaasGateway()
+                payment_response = gateway.create_payment(order, billing_type='UNDEFINED')
+                payment_url = payment_response.get('invoiceUrl')
+            except Exception as e:
+                # Se der erro no Asaas, não quebramos o site, mas logamos
+                print(f"Erro ao gerar pagamento Asaas: {e}")
+                payment_url = None  # Ou redirecionar para página de erro
 
             cart.clear()
             request.session['coupon_id'] = None
@@ -99,7 +124,6 @@ def order_create(request):
                 'payment_url': payment_url
             })
         else:
-            # DEBUG: Se o código chegar aqui, imprima os erros no terminal do seu PC
             print(f"ERROS DO FORMULÁRIO: {form.errors}")
 
     return render(request, 'orders/create.html', {'cart': cart, 'form': form})
@@ -111,15 +135,45 @@ def get_shipping_quote(request):
         from .models import ShippingRate
         rate = ShippingRate.objects.get(state__iexact=state_uf)
 
+        # Cria a lista de opções dinamicamente
+        options = []
+
+        # Só adiciona PAC se tiver preço e prazo cadastrados
+        if rate.pac_cost is not None and rate.pac_days is not None:
+            options.append({
+                'id': 'pac',
+                'name': 'PAC',
+                'cost': float(rate.pac_cost),
+                'days': rate.pac_days
+            })
+
+        # Só adiciona SEDEX se tiver preço e prazo
+        if rate.sedex_cost is not None and rate.sedex_days is not None:
+            options.append({
+                'id': 'sedex',
+                'name': 'SEDEX',
+                'cost': float(rate.sedex_cost),
+                'days': rate.sedex_days
+            })
+
+        # Só adiciona Transportadora se tiver preço e prazo
+        if rate.delivery_cost is not None and rate.delivery_days is not None:
+            options.append({
+                'id': 'delivery',
+                'name': 'Transportadora',
+                'cost': float(rate.delivery_cost),
+                'days': rate.delivery_days
+            })
+
+        # Se não sobrou nenhuma opção válida (ex: cadastrou o estado mas deixou tudo em branco)
+        if not options:
+            return JsonResponse({'success': False, 'message': 'Nenhuma modalidade de envio disponível para este Estado.'})
+
         return JsonResponse({
             'success': True,
-            'options': [
-                {'id': 'pac', 'name': 'PAC', 'cost': float(rate.pac_cost), 'days': rate.pac_days},
-                {'id': 'sedex', 'name': 'SEDEX', 'cost': float(rate.sedex_cost), 'days': rate.sedex_days},
-                {'id': 'delivery', 'name': 'Transportadora', 'cost': float(rate.delivery_cost),
-                 'days': rate.delivery_days},
-            ]
+            'options': options
         })
+
     except ShippingRate.DoesNotExist:
         return JsonResponse({'success': False, 'message': 'Região não atendida.'})
 
